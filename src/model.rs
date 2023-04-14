@@ -1,5 +1,5 @@
 use crate::boid::Agent;
-use ggez::graphics;
+use ggez::{Context, graphics};
 use crate::graphics::WINDOW_WIDTH;
 use crate::graphics::WINDOW_HEIGHT;
 
@@ -59,9 +59,9 @@ impl Model {
         }
     }
     // Draw model for current time step
-    pub fn draw(&self, ctx: &mut graphics::Canvas) {
+    pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas) {
         for a in &self.agents {
-            a.draw(ctx);
+            a.draw(ctx, canvas);
         }
     }
 }

@@ -1,9 +1,11 @@
 use ggez::{event, graphics, Context, GameResult};
+use ggez::glam::Vec2;
 use std::{env, path};
 use crate::model::Model;
 
 pub const WINDOW_WIDTH: f32 = 1200.0;
 pub const WINDOW_HEIGHT: f32 = 800.0;
+pub const BOID_SIZE: f32 = 16.0;
 
 // First we make a structure to contain the game's state
 struct MainState {
@@ -37,9 +39,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
         let mut canvas =
             graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
 
-
         self.model.step();
-        self.model.draw(&mut canvas);
+        self.model.draw(ctx, &mut canvas);
         canvas.finish(ctx)?;
 
         self.frames += 1;
