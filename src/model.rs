@@ -1,14 +1,17 @@
 use crate::boid::Agent;
+use ggez::graphics;
+use crate::graphics::WINDOW_WIDTH;
+use crate::graphics::WINDOW_HEIGHT;
 
 pub struct Time {
-    times: Vec<f64>,
-    pub dt: f64,
-    endtime: f64,
+    times: Vec<f32>,
+    pub dt: f32,
+    endtime: f32,
     current_index: i32,
 }
 
 impl Time {
-    fn new(dt: f64, endtime: f64) -> Time {
+    fn new(dt: f32, endtime: f32) -> Time {
         Time {
             times: vec![0.0],
             dt,
@@ -29,7 +32,6 @@ impl Time {
 
 
 pub struct Model {
-    l: f64,
     num_agents: i32,
     pub agents: Vec<Agent>,
     pub times: Time,
@@ -38,17 +40,28 @@ pub struct Model {
 impl Model {
     pub fn new() -> Model {
         Model {
-            l: 10.0,
             num_agents: 100,
             agents: {
                 let mut agents: Vec<Agent> = Vec::new();
                 for _ in 0..100 {
-                    let new_agent = Agent::new(10.0);
+                    let new_agent = Agent::new();
                     agents.push(new_agent);
                 }
                 agents
             },
             times: Time::new(0.25, 50.0),
+        }
+    }
+
+    pub fn step(&mut self) {
+        for a in self.agents.iter_mut() {
+            a.update(self.times.dt);
+        }
+    }
+    // Draw model for current time step
+    pub fn draw(&self, ctx: &mut graphics::Canvas) {
+        for a in &self.agents {
+            a.draw(ctx);
         }
     }
 }

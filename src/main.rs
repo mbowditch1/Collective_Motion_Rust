@@ -1,6 +1,7 @@
-use boids::model::Model;
+use boids::{model::Model, graphics};
 
 fn main() {
+    graphics::start_game();
     let mut model = Model::new(); 
 
     println!("Agent positon {:?}", &model.agents[0]);
