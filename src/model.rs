@@ -33,6 +33,11 @@ impl Time {
     }
 }
 
+enum BC {
+    Soft,
+    Periodic,
+    Hard,
+}
 
 pub struct Model {
     num_agents: i32,
@@ -41,6 +46,7 @@ pub struct Model {
     bound_length: f32,
     scale: f32,
     vision_radius: f32,
+    boundary_condition: BC,
 }
 
 impl Model {
@@ -60,6 +66,7 @@ impl Model {
             bound_length: 10.0,
             scale: WINDOW_WIDTH/10.0,
             vision_radius: 1.0,
+            boundary_condition: BC::Hard,
         }
     }
 
@@ -85,8 +92,14 @@ impl Model {
             new_vel.x += normal.sample(&mut rng);
             new_vel.y += normal.sample(&mut rng);
             new_vel = new_vel.normalize();
-            //println!("NEW VEL {},{}", &new_vel.x, &new_vel.y);
             self.agents[i].update(&mut self.times, new_vel);
+
+            match self.boundary_condition {
+                BC::Hard => {
+                    self.agents[i].hard_boundary(&self.times, self.bound_length);
+                },
+                _ => (),
+            }
         }
         self.times.inc_time();
     }

@@ -5,6 +5,22 @@ use rand::Rng;
 use rand_distr::{Distribution, Normal, NormalError};
 use crate::model::Time;
 
+pub enum Clamped {
+    Min(f32),
+    Max(f32),
+    Val(f32),
+}
+
+pub fn clamp(val: f32, min: f32, max: f32) -> Clamped {
+    if val < min {
+        Clamped::Min(min)
+    } else if val > max {
+        Clamped::Max(max)
+    } else {
+        Clamped::Val(val)
+    }
+}
+
 #[derive(Debug)]
 pub struct Agent {
     pub positions: Vec<Vec2>,
@@ -17,7 +33,7 @@ impl Agent {
     pub fn new(ctx: &mut Context, b_length: f32) -> Agent {
         let x: f32 = rand::thread_rng().gen::<f32>() * b_length;
         let y: f32 = rand::thread_rng().gen::<f32>() * b_length;
-        let a_vec = Vec2::new(x, y);
+        let mut a_vec = Vec2::new(x, y);
 
         // Change to include negatives
         let mut rng = rand::thread_rng(); 
@@ -99,4 +115,28 @@ impl Agent {
         canvas.draw(&self.polygon, drawparams);
     }
 
+    pub fn hard_boundary(&mut self, times: &Time, boundary_length: f32) {
+        match clamp(self.positions[times.current_index+1].x, 0.0, boundary_length) {
+            Clamped::Min(min) => {
+                self.positions[times.current_index+1].x = min; 
+                self.velocities[times.current_index+1].x = -1.0*self.velocities[times.current_index+1].x; 
+            },
+            Clamped::Max(max) => {
+                self.positions[times.current_index+1].x = max; 
+                self.velocities[times.current_index+1].x = -1.0*self.velocities[times.current_index+1].x; 
+            },
+            Clamped::Val(_val) => (),
+        }
+        match clamp(self.positions[times.current_index+1].y, 0.0, boundary_length) {
+            Clamped::Min(min) => {
+                self.positions[times.current_index+1].y= min; 
+                self.velocities[times.current_index+1].y = -1.0*self.velocities[times.current_index+1].y; 
+            },
+            Clamped::Max(max) => {
+                self.positions[times.current_index+1].y = max; 
+                self.velocities[times.current_index+1].y = -1.0*self.velocities[times.current_index+1].y; 
+            },
+            Clamped::Val(_val) => (),
+        }
+    }
 }
