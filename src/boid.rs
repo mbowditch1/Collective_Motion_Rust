@@ -1,9 +1,9 @@
 use ggez::glam::{Mat2, Vec2};
-use crate::graphics::{BOID_SIZE, WINDOW_WIDTH, WINDOW_HEIGHT};
+use crate::graphics::{PlayState, CREAM, WINDOW_WIDTH, WINDOW_HEIGHT, BOID_SIZE};
 use ggez::{Context, graphics};
 use rand::Rng;
 use rand_distr::{Distribution, Normal, NormalError};
-use crate::model::Time;
+use crate::model::{Time};
 
 pub enum Clamped {
     Min(f32),
@@ -79,7 +79,7 @@ impl Agent {
                     ctx,
                     graphics::DrawMode::fill(),
                     &polygon_matrix,
-                    graphics::Color::WHITE,
+                    graphics::Color::from(CREAM), 
                 ).unwrap()
             },
         }
@@ -101,17 +101,22 @@ impl Agent {
         self.positions.push(new_pos);
     }
 
-    pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas, scale:f32) {
+    pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas, scale:f32, disco_mode: &PlayState) {
         let last_pos = (*self.positions.last().unwrap()).clone();
         let angle = -1.0*self.velocities.last().unwrap().angle_between(Vec2::Y)
              + std::f32::consts::PI;
 
         // Calculate new polygon vertices and set
         let next_pos = last_pos * scale;
+        let colour;
+        match disco_mode {
+            PlayState::play => colour = [rand::thread_rng().gen::<f32>(),rand::thread_rng().gen::<f32>(),rand::thread_rng().gen::<f32>(), 1.0],
+            PlayState::paused => colour = CREAM,
+        }
         let drawparams = graphics::DrawParam::new()
             .dest(next_pos)
-            .rotation(angle);
-
+            .rotation(angle)
+            .color(graphics::Color::from(colour)); 
 
         canvas.draw(&self.polygon, drawparams);
     }

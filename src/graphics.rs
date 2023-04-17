@@ -1,4 +1,6 @@
 use ggez::{event, graphics, Context, GameResult};
+use ggez::audio;
+use ggez::audio::SoundSource;
 use std::{env, path};
 use crate::model::Model;
 pub const WINDOW_WIDTH: f32 = 800.0;
@@ -7,7 +9,28 @@ pub const BOID_SIZE: f32 = 16.0;
 pub const FPS_TARGET: f32 = 60.0;
 pub const DT: f32 = 1.0/FPS_TARGET;
 
-enum PlayState {
+// Colour scheme
+pub const DRED: [f32; 4] = [120.0/255.0, 0.0, 0.0, 1.0];
+pub const LRED: [f32; 4] = [193.0/255.0, 18.0/255.0, 31.0/255.0, 1.0];
+pub const CREAM: [f32; 4] = [253.0/255.0, 240.0/255.0, 213.0/255.0, 1.0];
+pub const DBLUE: [f32; 4] = [0.0, 48.0/255.0, 73.0/255.0, 1.0];
+pub const LBLUE: [f32; 4] = [102.0, 155.0/255.0, 188.0/255.0, 1.0];
+
+struct Assets {
+    disco_music: audio::Source,
+}
+
+impl Assets {
+    fn new(ctx: &mut Context) -> GameResult<Assets> {
+        let disco_music = audio::Source::new(ctx, "/disco_music.ogg")?;
+
+        Ok(Assets {
+            disco_music,
+        })
+    }
+}
+
+pub enum PlayState {
     play,
     paused,
 }
@@ -26,6 +49,8 @@ struct MainState {
     frames: usize,
     model: Model,
     play_state: PlayState,
+    disco_mode: PlayState,
+    assets: Assets,
 }
 
 impl MainState {
@@ -35,7 +60,13 @@ impl MainState {
             graphics::FontData::from_path(ctx, "/LiberationMono-Regular.ttf")?,
         );
 
-        let s = MainState { frames: 0, model: Model::new(ctx), play_state: PlayState::play };
+        let s = MainState { 
+            frames: 0,
+            model: Model::new(ctx),
+            play_state: PlayState::play,
+            disco_mode: PlayState::paused,
+            assets: Assets::new(ctx)?,
+        };
         Ok(s)
     }
 }
@@ -56,9 +87,9 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas =
-            graphics::Canvas::from_frame(ctx, graphics::Color::from([0.1, 0.2, 0.3, 1.0]));
+            graphics::Canvas::from_frame(ctx, graphics::Color::from(DBLUE));
 
-        self.model.draw(ctx, &mut canvas);
+        self.model.draw(ctx, &mut canvas, &self.disco_mode);
         canvas.finish(ctx)?;
 
         self.frames += 1;
@@ -83,6 +114,22 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     ggez::input::keyboard::KeyCode::Space => { 
                         let new_play_state = self.play_state.swap();
                         self.play_state = new_play_state;
+                    },
+                    ggez::input::keyboard::KeyCode::B => {
+                        let new_bc = self.model.boundary_condition.swap();
+                        self.model.boundary_condition = new_bc;
+                    },
+                    ggez::input::keyboard::KeyCode:: D => {
+                        match self.disco_mode {
+                            PlayState::play => {
+                                self.disco_mode = self.disco_mode.swap();
+                                self.assets.disco_music.pause();
+                            },
+                            PlayState::paused => {
+                                self.disco_mode = self.disco_mode.swap();
+                                self.assets.disco_music.play(ctx)?;
+                            }
+                        }
                     }
                     _ => (),
                 }

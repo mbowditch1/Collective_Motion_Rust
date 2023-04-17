@@ -3,7 +3,7 @@ use rand_distr::{Distribution, Normal, NormalError};
 use rand::Rng;
 use ggez::{Context, graphics};
 use ggez::glam::Vec2;
-use crate::graphics::{WINDOW_HEIGHT, DT, WINDOW_WIDTH};
+use crate::graphics::{WINDOW_HEIGHT, DT, WINDOW_WIDTH, PlayState, BOID_SIZE};
 
 pub struct Time {
     times: Vec<f32>,
@@ -33,10 +33,20 @@ impl Time {
     }
 }
 
-enum BC {
+pub enum BC {
     Soft,
     Periodic,
     Hard,
+}
+
+impl BC {
+    pub fn swap(&self) -> Self {
+        match self {
+            Self::Soft => Self::Periodic, 
+            Self::Periodic => Self::Hard, 
+            Self::Hard => Self::Soft, 
+        }
+    }
 }
 
 pub fn periodic_dist(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32) -> f32 {
@@ -54,7 +64,7 @@ pub struct Model {
     bound_length: f32,
     scale: f32,
     vision_radius: f32,
-    boundary_condition: BC,
+    pub boundary_condition: BC,
 }
 
 impl Model {
@@ -62,8 +72,6 @@ impl Model {
         // DEFAULTS
         let bound_length = 10.0;
         let num_agents = 100;
-        let test_1 = Vec2::new(4.0, 4.0);
-        let test_2 = Vec2::new(5.0, 4.0);
         Model {
             num_agents,
             agents: {
@@ -127,9 +135,9 @@ impl Model {
         self.times.inc_time();
     }
     // Draw model for current time step
-    pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas) {
+    pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas, disco_mode: &PlayState) {
         for a in &self.agents {
-            a.draw(ctx, canvas, self.scale);
+            a.draw(ctx, canvas, self.scale, disco_mode);
         }
     }
 }
