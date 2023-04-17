@@ -1,17 +1,31 @@
 use ggez::{event, graphics, Context, GameResult};
 use std::{env, path};
 use crate::model::Model;
-
 pub const WINDOW_WIDTH: f32 = 800.0;
 pub const WINDOW_HEIGHT: f32 = WINDOW_WIDTH; 
 pub const BOID_SIZE: f32 = 16.0;
 pub const FPS_TARGET: f32 = 60.0;
 pub const DT: f32 = 1.0/FPS_TARGET;
 
+enum PlayState {
+    play,
+    paused,
+}
+
+impl PlayState {
+    fn swap(&self) -> Self {
+        match self {
+            Self::play => Self::paused, 
+            Self::paused => Self::play, 
+        }
+    }
+}
+
 // First we make a structure to contain the game's state
 struct MainState {
     frames: usize,
     model: Model,
+    play_state: PlayState,
 }
 
 impl MainState {
@@ -21,7 +35,7 @@ impl MainState {
             graphics::FontData::from_path(ctx, "/LiberationMono-Regular.ttf")?,
         );
 
-        let s = MainState { frames: 0, model: Model::new(ctx) };
+        let s = MainState { frames: 0, model: Model::new(ctx), play_state: PlayState::play };
         Ok(s)
     }
 }
@@ -33,7 +47,10 @@ impl MainState {
 // that you can override if you wish, but the defaults are fine.
 impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult {
-        self.model.step();
+        match self.play_state {
+            PlayState::paused => (),
+            PlayState::play => self.model.step(),
+        }
         Ok(())
     }
 
@@ -47,8 +64,6 @@ impl event::EventHandler<ggez::GameError> for MainState {
         self.frames += 1;
         if (self.frames % 100) == 0 {
             println!("FPS: {}", ctx.time.fps());
-            let drawable = ctx.gfx.drawable_size();
-            println!("Drawable size: {}, {}", drawable.0, drawable.1);
         }
 
         Ok(())
@@ -62,6 +77,18 @@ impl event::EventHandler<ggez::GameError> for MainState {
         ) -> Result<(), ggez::GameError> {
 
         println!("Key pressed");
+        match input.keycode {
+            Some(val) => {
+                match val {
+                    ggez::input::keyboard::KeyCode::Space => { 
+                        let new_play_state = self.play_state.swap();
+                        self.play_state = new_play_state;
+                    }
+                    _ => (),
+                }
+            },
+            _ => (),
+        }
         Ok(()) 
     }
 }

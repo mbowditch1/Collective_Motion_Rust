@@ -39,6 +39,14 @@ enum BC {
     Hard,
 }
 
+pub fn periodic_dist(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32) -> f32 {
+    let x_dist: f32 = ((vec_1.x - vec_2.x + bound_length/2.0 + bound_length) % bound_length) - bound_length/2.0;
+    let y_dist: f32 = ((vec_1.y - vec_2.y + bound_length/2.0 + bound_length) % bound_length) - bound_length/2.0;
+    let distance_vec = Vec2::new(x_dist, y_dist); 
+    distance_vec.length() 
+}
+
+
 pub struct Model {
     num_agents: i32,
     pub agents: Vec<Agent>,
@@ -52,21 +60,25 @@ pub struct Model {
 impl Model {
     pub fn new(ctx: &mut Context) -> Model {
         // DEFAULTS
+        let bound_length = 10.0;
+        let num_agents = 100;
+        let test_1 = Vec2::new(4.0, 4.0);
+        let test_2 = Vec2::new(5.0, 4.0);
         Model {
-            num_agents: 100,
+            num_agents,
             agents: {
                 let mut agents: Vec<Agent> = Vec::new();
-                for _ in 0..100 {
-                    let new_agent = Agent::new(ctx, 10.0);
+                for _ in 0..num_agents {
+                    let new_agent = Agent::new(ctx, bound_length);
                     agents.push(new_agent);
                 }
                 agents
             },
             times: Time::new(DT, 50.0),
-            bound_length: 10.0,
-            scale: WINDOW_WIDTH/10.0,
+            bound_length,
+            scale: WINDOW_WIDTH/bound_length,
             vision_radius: 1.0,
-            boundary_condition: BC::Hard,
+            boundary_condition: BC::Periodic,
         }
     }
 
@@ -75,7 +87,15 @@ impl Model {
             let mut new_vel = Vec2::ZERO;
             let mut num_nearby: i32 = 0;
             for j in 0..self.agents.len() {
-                let dist: f32 = self.agents[i].positions[self.times.current_index].distance(self.agents[j].positions[self.times.current_index]);
+                let mut dist: f32;
+                match self.boundary_condition {
+                    BC::Periodic => {
+                        dist = periodic_dist(&self.agents[i].positions[self.times.current_index],
+                            &self.agents[j].positions[self.times.current_index],
+                            self.bound_length);
+                    },
+                    _ => dist = self.agents[i].positions[self.times.current_index].distance(self.agents[j].positions[self.times.current_index]),
+                };
                 if dist < self.vision_radius  {
                     new_vel += self.agents[j].velocities[self.times.current_index];
                     num_nearby += 1;
@@ -97,6 +117,9 @@ impl Model {
             match self.boundary_condition {
                 BC::Hard => {
                     self.agents[i].hard_boundary(&self.times, self.bound_length);
+                },
+                BC::Periodic => {
+                    self.agents[i].periodic_boundary(&self.times, self.bound_length);
                 },
                 _ => (),
             }

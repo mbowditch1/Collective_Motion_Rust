@@ -21,6 +21,7 @@ pub fn clamp(val: f32, min: f32, max: f32) -> Clamped {
     }
 }
 
+
 #[derive(Debug)]
 pub struct Agent {
     pub positions: Vec<Vec2>,
@@ -113,6 +114,11 @@ impl Agent {
 
 
         canvas.draw(&self.polygon, drawparams);
+    }
+    
+    pub fn periodic_boundary(&mut self, times: &Time, boundary_length: f32) {
+        self.positions[times.current_index+1].x = (self.positions[times.current_index+1].x + boundary_length) % boundary_length; 
+        self.positions[times.current_index+1].y = (self.positions[times.current_index+1].y + boundary_length) % boundary_length; 
     }
 
     pub fn hard_boundary(&mut self, times: &Time, boundary_length: f32) {
