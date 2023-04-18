@@ -1,4 +1,4 @@
-use boids::{model::Model, graphics};
+use boids::graphics;
 
 fn main() {
     graphics::start_game();

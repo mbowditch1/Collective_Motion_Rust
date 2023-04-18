@@ -3,7 +3,7 @@ use crate::graphics::{PlayState, CREAM, WINDOW_WIDTH, WINDOW_HEIGHT, BOID_SIZE};
 use ggez::{Context, graphics};
 use rand::Rng;
 use rand_distr::{Distribution, Normal, NormalError};
-use crate::model::{Time};
+use crate::model::Time;
 
 pub enum Clamped {
     Min(f32),

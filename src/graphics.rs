@@ -1,4 +1,7 @@
-use ggez::{event, graphics, Context, GameResult};
+use ggez::{event, graphics, GameResult};
+use ggez::glam::Vec2;
+use ggegui::{egui, Gui};
+use ggez::context::Context;
 use ggez::audio;
 use ggez::audio::SoundSource;
 use std::{env, path};
@@ -51,10 +54,11 @@ struct MainState {
     play_state: PlayState,
     disco_mode: PlayState,
     assets: Assets,
+    gui: Gui,
 }
 
 impl MainState {
-    fn new(ctx: &mut Context) -> GameResult<MainState> {
+    fn new(ctx: &mut ggez::context::Context) -> GameResult<MainState> {
         ctx.gfx.add_font(
             "LiberationMono",
             graphics::FontData::from_path(ctx, "/LiberationMono-Regular.ttf")?,
@@ -66,6 +70,7 @@ impl MainState {
             play_state: PlayState::play,
             disco_mode: PlayState::paused,
             assets: Assets::new(ctx)?,
+            gui: Gui::new(ctx),
         };
         Ok(s)
     }
@@ -77,7 +82,26 @@ impl MainState {
 // The `EventHandler` trait also contains callbacks for event handling
 // that you can override if you wish, but the defaults are fine.
 impl event::EventHandler<ggez::GameError> for MainState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult {
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
+        let gui_ctx = self.gui.ctx();
+        egui::Window::new("Parameters").show(&gui_ctx, |ui| {
+            ui.label("");
+                if ui.button("Disco Mode").clicked() {
+                    match self.disco_mode {
+                        PlayState::play => {
+                            self.disco_mode = self.disco_mode.swap();
+                            self.assets.disco_music.pause();
+                        },
+                        PlayState::paused => {
+                            self.disco_mode = self.disco_mode.swap();
+                            self.assets.disco_music.play(ctx);
+                        }
+                    }
+                }
+            });
+        self.gui.update(ctx);
+
+        // Pause logic
         match self.play_state {
             PlayState::paused => (),
             PlayState::play => self.model.step(),
@@ -90,6 +114,10 @@ impl event::EventHandler<ggez::GameError> for MainState {
             graphics::Canvas::from_frame(ctx, graphics::Color::from(DBLUE));
 
         self.model.draw(ctx, &mut canvas, &self.disco_mode);
+        canvas.draw(
+            &self.gui, 
+            graphics::DrawParam::default().dest(Vec2::ZERO),
+        );
         canvas.finish(ctx)?;
 
         self.frames += 1;

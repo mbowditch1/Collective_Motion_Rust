@@ -1,4 +1,5 @@
 use crate::boid::Agent;
+use crate::grid::Grid;
 use rand_distr::{Distribution, Normal, NormalError};
 use rand::Rng;
 use ggez::{Context, graphics};
@@ -59,12 +60,12 @@ pub fn periodic_dist(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32) -> f32 {
 
 pub struct Model {
     num_agents: i32,
-    pub agents: Vec<Agent>,
     pub times: Time,
     bound_length: f32,
     scale: f32,
     vision_radius: f32,
     pub boundary_condition: BC,
+    pub grid: Grid,
 }
 
 impl Model {
@@ -72,72 +73,110 @@ impl Model {
         // DEFAULTS
         let bound_length = 10.0;
         let num_agents = 100;
+        let vision_radius = 1.0;
+
+        // Create grid and assign agents
+        let mut grid = Grid::new(vision_radius, bound_length); 
+        for a in 0..num_agents {
+            let agent = Agent::new(ctx, bound_length);
+            grid.push_agent(agent);
+        }
         Model {
             num_agents,
-            agents: {
-                let mut agents: Vec<Agent> = Vec::new();
-                for _ in 0..num_agents {
-                    let new_agent = Agent::new(ctx, bound_length);
-                    agents.push(new_agent);
-                }
-                agents
-            },
+            grid,
             times: Time::new(DT, 50.0),
             bound_length,
             scale: WINDOW_WIDTH/bound_length,
-            vision_radius: 1.0,
+            vision_radius,
             boundary_condition: BC::Periodic,
         }
     }
 
     pub fn step(&mut self) {
-        for i in 0..self.agents.len() {
-            let mut new_vel = Vec2::ZERO;
-            let mut num_nearby: i32 = 0;
-            for j in 0..self.agents.len() {
-                let mut dist: f32;
-                match self.boundary_condition {
-                    BC::Periodic => {
-                        dist = periodic_dist(&self.agents[i].positions[self.times.current_index],
-                            &self.agents[j].positions[self.times.current_index],
-                            self.bound_length);
+        for c_i in 0..self.grid.num_cells { 
+            for c_j in 0..self.grid.num_cells { 
+                for i in 0..self.grid.cells[c_i][c_j].agents.len() {
+                    let mut new_vel = Vec2::ZERO;
+                    let mut num_nearby: i32 = 0;
+                    for n in 0..3 {
+                        for m in 0..3 {
+                            let index_i = (c_i as i32 +n as i32 +self.grid.num_cells as i32 -1 as i32)%self.grid.num_cells as i32;
+                            let index_j = (c_j as i32+m as i32+self.grid.num_cells as i32 -1 as i32)%self.grid.num_cells as i32;
+                            for a_2 in self.grid.cells[index_i as usize][index_j as usize].agents.iter() { 
+                                let dist: f32;
+                                match self.boundary_condition {
+                                    BC::Periodic => {
+                                        dist = periodic_dist(&self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index],
+                                            &a_2.positions[self.times.current_index],
+                                            self.bound_length);
+                                    },
+                                    _ => dist = self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index].distance(a_2.positions[self.times.current_index]),
+                                };
+                                if dist < self.vision_radius  {
+                                    new_vel += a_2.velocities[self.times.current_index];
+                                    num_nearby += 1;
+                                }
+                            }
+                        }
+                    }
+
+                    if num_nearby > 0 {
+                        new_vel = new_vel / num_nearby as f32;
+                    } else {
+                        new_vel = self.grid.cells[c_i][c_j].agents[i].velocities[self.times.current_index].clone();
+                    }
+                    let mut rng = rand::thread_rng(); 
+                    let normal = Normal::new(0.0, 0.05).unwrap();
+                    new_vel.x += normal.sample(&mut rng);
+                    new_vel.y += normal.sample(&mut rng);
+                    new_vel = new_vel.normalize();
+                    self.grid.cells[c_i][c_j].agents[i].update(&mut self.times, new_vel);
+
+                    match self.boundary_condition {
+                    BC::Hard => {
+                        self.grid.cells[c_i][c_j].agents[i].hard_boundary(&self.times, self.bound_length);
                     },
-                    _ => dist = self.agents[i].positions[self.times.current_index].distance(self.agents[j].positions[self.times.current_index]),
-                };
-                if dist < self.vision_radius  {
-                    new_vel += self.agents[j].velocities[self.times.current_index];
-                    num_nearby += 1;
+                    BC::Periodic => {
+                        self.grid.cells[c_i][c_j].agents[i].periodic_boundary(&self.times, self.bound_length);
+                    },
+                    _ => (),
+                    }
                 }
             }
+        }
+        // Change cells if needed
+        for c_i in 0..self.grid.num_cells { 
+            for c_j in 0..self.grid.num_cells { 
+                let mut indices: Vec<usize> = Vec::new();
+                for a in 0..self.grid.cells[c_i][c_j].agents.len() {
+                    if !(self.grid.cells[c_i][c_j].agents[a].positions.last().unwrap().x > self.grid.cells[c_i][c_j].xmin &&
+                        self.grid.cells[c_i][c_j].agents[a].positions.last().unwrap().x < self.grid.cells[c_i][c_j].xmax &&
+                        self.grid.cells[c_i][c_j].agents[a].positions.last().unwrap().y < self.grid.cells[c_i][c_j].ymax &&
+                        self.grid.cells[c_i][c_j].agents[a].positions.last().unwrap().y > self.grid.cells[c_i][c_j].ymin) {
 
-            if num_nearby > 0 {
-                new_vel = new_vel / num_nearby as f32;
-            } else {
-                new_vel = self.agents[i].velocities[self.times.current_index].clone();
-            }
-            let mut rng = rand::thread_rng(); 
-            let normal = Normal::new(0.0, 0.05).unwrap();
-            new_vel.x += normal.sample(&mut rng);
-            new_vel.y += normal.sample(&mut rng);
-            new_vel = new_vel.normalize();
-            self.agents[i].update(&mut self.times, new_vel);
-
-            match self.boundary_condition {
-                BC::Hard => {
-                    self.agents[i].hard_boundary(&self.times, self.bound_length);
-                },
-                BC::Periodic => {
-                    self.agents[i].periodic_boundary(&self.times, self.bound_length);
-                },
-                _ => (),
+                        // Move agent
+                        indices.push(a);
+                    }
+                }
+                for i in 0..indices.len() {
+                    indices[i] -= i;
+                }
+                for i in 0..indices.len() {
+                    let agent = self.grid.cells[c_i][c_j].agents.remove(indices[i] as usize);
+                    self.grid.push_agent(agent);
+                }
             }
         }
         self.times.inc_time();
     }
     // Draw model for current time step
     pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas, disco_mode: &PlayState) {
-        for a in &self.agents {
-            a.draw(ctx, canvas, self.scale, disco_mode);
+        for i in 0..self.grid.num_cells {
+            for j in 0..self.grid.num_cells {
+                for a in self.grid.cells[i][j].agents.iter() {
+                    a.draw(ctx, canvas, self.scale, disco_mode);
+                }
+            }
         }
     }
 }
