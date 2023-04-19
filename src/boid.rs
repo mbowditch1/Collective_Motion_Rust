@@ -31,10 +31,11 @@ pub enum AgentType {
 pub struct PredParams {
     pub current_direction: f32,
     pub prey_alignment: f32,
-    pub prey_centering: f32,
+    pub prey_attraction: f32,
     pub nearest_prey: f32,
     pub predator_alignment: f32,
-    pub predator_centering: f32,
+    pub predator_attraction: f32,
+    pub predator_repulsion: f32,
     pub boundary: f32,
 }
 
@@ -42,23 +43,27 @@ pub struct PredParams {
 pub struct PreyParams {
     pub current_direction: f32,
     pub prey_alignment: f32,
-    pub prey_centering: f32,
+    pub prey_attraction: f32,
+    pub prey_repulsion: f32,
     pub predator_alignment: f32,
     pub predator_centering: f32,
+    pub predator_repulsion: f32,
     pub boundary: f32,
 }
 
 impl PreyParams {
     pub fn new() -> PreyParams {
-        PreyParams { current_direction: (0.0), prey_alignment: (1.0), prey_centering: (0.0),  predator_alignment: (10.0), predator_centering: (0.0), boundary: (20.0) }
+        PreyParams { current_direction: (0.0), prey_attraction: (0.0), prey_alignment: (1.0), prey_repulsion: (0.0), predator_alignment: (0.0), predator_centering: (0.0), predator_repulsion: (10.0), boundary: (20.0) }
     }
 
     pub fn from_params(gui_params: &mut GUIPreyParams) -> PreyParams {
         let current_direction;
+        let prey_attraction;
         let prey_alignment;
-        let prey_centering;
+        let prey_repulsion;
         let predator_alignment;
         let predator_centering;
+        let predator_repulsion;
         let boundary;
         match gui_params.current_direction.parse::<f32>() {
             Ok(v) =>  current_direction = v,
@@ -76,12 +81,20 @@ impl PreyParams {
                 gui_params.prey_alignment = 1.0.to_string();
             },
         };
-        match gui_params.prey_centering.parse::<f32>() {
-            Ok(v) =>  prey_centering = v,
+        match gui_params.prey_attraction.parse::<f32>() {
+            Ok(v) =>  prey_attraction = v,
             Err(_E) => {
                 println!("Please enter a valid prey_centering. Setting to default");
-                prey_centering = 0.0;
-                gui_params.prey_centering = 0.0.to_string();
+                prey_attraction = 0.0;
+                gui_params.prey_attraction = 0.0.to_string();
+            },
+        };
+        match gui_params.prey_repulsion.parse::<f32>() {
+            Ok(v) =>  prey_repulsion = v,
+            Err(_E) => {
+                println!("Please enter a valid prey_repulsion. Setting to default");
+                prey_repulsion = 0.0;
+                gui_params.prey_repulsion = 0.0.to_string();
             },
         };
         match gui_params.predator_alignment.parse::<f32>() {
@@ -100,6 +113,14 @@ impl PreyParams {
                 gui_params.predator_centering = 10.0.to_string();
             },
         };
+        match gui_params.predator_repulsion.parse::<f32>() {
+            Ok(v) =>  predator_repulsion = v,
+            Err(_E) => {
+                println!("Please enter a valid predator_repulsion. Setting to default");
+                predator_repulsion = 10.0;
+                gui_params.predator_repulsion = 10.0.to_string();
+            },
+        };
         match gui_params.boundary.parse::<f32>() {
             Ok(v) =>  boundary = v,
             Err(_E) => {
@@ -110,10 +131,12 @@ impl PreyParams {
         };
         PreyParams {
             current_direction,
+            prey_attraction,
             prey_alignment,
-            prey_centering,
+            prey_repulsion,
             predator_alignment,
             predator_centering,
+            predator_repulsion,
             boundary,
         }
     }
@@ -121,16 +144,17 @@ impl PreyParams {
 
 impl PredParams {
     pub fn new() -> PredParams {
-        PredParams { current_direction: (0.0), prey_alignment: (0.0), prey_centering: (0.0), nearest_prey: (1.0), predator_alignment: (0.0), predator_centering: (0.0), boundary: (10.0) }
+        PredParams { current_direction: (0.0), prey_attraction: (0.0), prey_alignment: (0.0), nearest_prey: (1.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0) }
     }
 
     pub fn from_params(gui_params: &mut GUIPredParams) -> PredParams {
         let current_direction;
         let prey_alignment;
-        let prey_centering;
+        let prey_attraction;
         let nearest_prey;
         let predator_alignment;
         let predator_centering;
+        let predator_repulsion;
         let boundary;
         match gui_params.current_direction.parse::<f32>() {
             Ok(v) =>  current_direction = v,
@@ -148,12 +172,12 @@ impl PredParams {
                 gui_params.prey_alignment = 0.0.to_string();
             },
         };
-        match gui_params.prey_centering.parse::<f32>() {
-            Ok(v) =>  prey_centering = v,
+        match gui_params.prey_attraction.parse::<f32>() {
+            Ok(v) =>  prey_attraction = v,
             Err(_E) => {
-                println!("Please enter a valid prey_centering. Setting to default");
-                prey_centering = 0.0;
-                gui_params.prey_centering = 0.0.to_string();
+                println!("Please enter a valid prey_attraction. Setting to default");
+                prey_attraction = 0.0;
+                gui_params.prey_attraction = 0.0.to_string();
             },
         };
         match gui_params.nearest_prey.parse::<f32>() {
@@ -180,6 +204,14 @@ impl PredParams {
                 gui_params.predator_centering = 0.0.to_string();
             },
         };
+        match gui_params.predator_repulsion.parse::<f32>() {
+            Ok(v) =>  predator_repulsion = v,
+            Err(_E) => {
+                println!("Please enter a valid predator_repulsion. Setting to default");
+                predator_repulsion = 0.0;
+                gui_params.predator_repulsion = 0.0.to_string();
+            },
+        };
         match gui_params.boundary.parse::<f32>() {
             Ok(v) =>  boundary = v,
             Err(_E) => {
@@ -191,10 +223,11 @@ impl PredParams {
         PredParams {
             current_direction,
             prey_alignment,
-            prey_centering,
+            prey_attraction,
             nearest_prey,
             predator_alignment,
-            predator_centering,
+            predator_attraction: predator_centering,
+            predator_repulsion,
             boundary,
         }
     }

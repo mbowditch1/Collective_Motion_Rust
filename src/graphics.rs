@@ -48,19 +48,22 @@ impl PlayState {
 pub struct GUIPreyParams {
     pub current_direction: String,
     pub prey_alignment: String,
-    pub prey_centering: String,
+    pub prey_attraction: String,
+    pub prey_repulsion: String,
     pub predator_alignment: String,
     pub predator_centering: String,
+    pub predator_repulsion: String,
     pub boundary: String,
 }
 
 pub struct GUIPredParams {
     pub current_direction: String,
     pub prey_alignment: String,
-    pub prey_centering: String,
+    pub prey_attraction: String,
     pub nearest_prey: String,
     pub predator_alignment: String,
     pub predator_centering: String,
+    pub predator_repulsion: String,
     pub boundary: String,
 }
 
@@ -76,9 +79,11 @@ impl GUIPreyParams {
         GUIPreyParams {
             current_direction: "0".to_owned(),
             prey_alignment: "1".to_owned(),
-            prey_centering: "0".to_owned(),
+            prey_attraction: "0".to_owned(),
+            prey_repulsion: "0".to_owned(),
             predator_alignment: "0".to_owned(),
             predator_centering: "10".to_owned(),
+            predator_repulsion: "1.0".to_owned(),
             boundary: "20".to_owned(),
         }
     }
@@ -89,10 +94,11 @@ impl GUIPredParams {
         GUIPredParams {
             current_direction: "0".to_owned(),
             prey_alignment: "0".to_owned(),
-            prey_centering: "0".to_owned(),
+            prey_attraction: "0".to_owned(),
             nearest_prey: "1".to_owned(),
             predator_alignment: "0".to_owned(),
             predator_centering: "0".to_owned(),
+            predator_repulsion: "0".to_owned(),
             boundary: "10".to_owned(),
         }
     }
@@ -168,21 +174,21 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     );
                 });
                 ui.horizontal(|ui| {
-                    ui.label("Current velocity: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.current_direction),
-                    );
-                });
-                ui.horizontal(|ui| {
                     ui.label("Prey Alignment: ");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_alignment),
                     );
                 });
                 ui.horizontal(|ui| {
-                    ui.label("Prey Centering: ");
+                    ui.label("Prey Attraction: ");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_centering),
+                        egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_attraction),
+                    );
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Prey Repulsion: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_repulsion),
                     );
                 });
                 ui.horizontal(|ui| {
@@ -192,9 +198,15 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     );
                 });
                 ui.horizontal(|ui| {
-                    ui.label("Predator Centering");
+                    ui.label("Predator Attraction: ");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.prey_params.predator_centering),
+                    );
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Predator Repulsion: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.prey_params.predator_repulsion),
                     );
                 });
                 ui.horizontal(|ui| {
@@ -213,21 +225,15 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     );
                 });
                 ui.horizontal(|ui| {
-                    ui.label("Current velocity: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.current_direction),
-                    );
-                });
-                ui.horizontal(|ui| {
                     ui.label("Prey Alignment: ");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.pred_params.prey_alignment),
                     );
                 });
                 ui.horizontal(|ui| {
-                    ui.label("Prey Centering: ");
+                    ui.label("Prey Attraction: ");
                     ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.prey_centering),
+                        egui::TextEdit::singleline(&mut self.parameters.pred_params.prey_attraction),
                     );
                 });
                 ui.horizontal(|ui| {
@@ -243,9 +249,15 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     );
                 });
                 ui.horizontal(|ui| {
-                    ui.label("Predator Centering");
+                    ui.label("Predator Attraction");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.pred_params.predator_centering),
+                    );
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Predator Repulsion");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.pred_params.predator_repulsion),
                     );
                 });
                 ui.horizontal(|ui| {
