@@ -1,23 +1,23 @@
-use ggez::{event, graphics, GameResult};
-use ggez::glam::Vec2;
+use crate::model::Model;
 use ggegui::{egui, Gui};
-use ggez::context::Context;
 use ggez::audio;
 use ggez::audio::SoundSource;
+use ggez::context::Context;
+use ggez::glam::Vec2;
+use ggez::{event, graphics, GameResult};
 use std::{env, path};
-use crate::model::Model;
 pub const WINDOW_WIDTH: f32 = 800.0;
-pub const WINDOW_HEIGHT: f32 = WINDOW_WIDTH; 
+pub const WINDOW_HEIGHT: f32 = WINDOW_WIDTH;
 pub const BOID_SIZE: f32 = 16.0;
 pub const FPS_TARGET: f32 = 60.0;
-pub const DT: f32 = 1.0/FPS_TARGET;
+pub const DT: f32 = 1.0 / FPS_TARGET;
 
 // Colour scheme
-pub const DRED: [f32; 4] = [120.0/255.0, 0.0, 0.0, 1.0];
-pub const LRED: [f32; 4] = [193.0/255.0, 18.0/255.0, 31.0/255.0, 1.0];
-pub const CREAM: [f32; 4] = [253.0/255.0, 240.0/255.0, 213.0/255.0, 1.0];
-pub const DBLUE: [f32; 4] = [0.0, 48.0/255.0, 73.0/255.0, 1.0];
-pub const LBLUE: [f32; 4] = [102.0, 155.0/255.0, 188.0/255.0, 1.0];
+pub const DRED: [f32; 4] = [120.0 / 255.0, 0.0, 0.0, 1.0];
+pub const LRED: [f32; 4] = [193.0 / 255.0, 18.0 / 255.0, 31.0 / 255.0, 1.0];
+pub const CREAM: [f32; 4] = [253.0 / 255.0, 240.0 / 255.0, 213.0 / 255.0, 1.0];
+pub const DBLUE: [f32; 4] = [0.0, 48.0 / 255.0, 73.0 / 255.0, 1.0];
+pub const LBLUE: [f32; 4] = [102.0, 155.0 / 255.0, 188.0 / 255.0, 1.0];
 
 struct Assets {
     disco_music: audio::Source,
@@ -27,9 +27,7 @@ impl Assets {
     fn new(ctx: &mut Context) -> GameResult<Assets> {
         let disco_music = audio::Source::new(ctx, "/disco_music.ogg")?;
 
-        Ok(Assets {
-            disco_music,
-        })
+        Ok(Assets { disco_music })
     }
 }
 
@@ -41,12 +39,25 @@ pub enum PlayState {
 impl PlayState {
     fn swap(&self) -> Self {
         match self {
-            Self::play => Self::paused, 
-            Self::paused => Self::play, 
+            Self::play => Self::paused,
+            Self::paused => Self::play,
         }
     }
 }
 
+pub struct GUIParameters {
+    pub bound_length: String,
+    pub vision_radius: String,
+}
+
+impl GUIParameters {
+    fn new() -> GUIParameters {
+        GUIParameters {
+            bound_length: "10".to_owned(),
+            vision_radius: "1".to_owned(), 
+        }
+    }
+}
 // First we make a structure to contain the game's state
 struct MainState {
     frames: usize,
@@ -55,6 +66,7 @@ struct MainState {
     disco_mode: PlayState,
     assets: Assets,
     gui: Gui,
+    parameters: GUIParameters,
 }
 
 impl MainState {
@@ -64,13 +76,14 @@ impl MainState {
             graphics::FontData::from_path(ctx, "/LiberationMono-Regular.ttf")?,
         );
 
-        let s = MainState { 
+        let s = MainState {
             frames: 0,
             model: Model::new(ctx),
             play_state: PlayState::play,
             disco_mode: PlayState::paused,
             assets: Assets::new(ctx)?,
             gui: Gui::new(ctx),
+            parameters: GUIParameters::new(),
         };
         Ok(s)
     }
@@ -85,20 +98,34 @@ impl event::EventHandler<ggez::GameError> for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         let gui_ctx = self.gui.ctx();
         egui::Window::new("Parameters").show(&gui_ctx, |ui| {
-            ui.label("");
-                if ui.button("Disco Mode").clicked() {
-                    match self.disco_mode {
-                        PlayState::play => {
-                            self.disco_mode = self.disco_mode.swap();
-                            self.assets.disco_music.pause();
-                        },
-                        PlayState::paused => {
-                            self.disco_mode = self.disco_mode.swap();
-                            self.assets.disco_music.play(ctx);
-                        }
+            ui.horizontal(|ui| {
+                let boundary_length_label = ui.label("Boundary length: ");
+                ui.add(
+                    egui::TextEdit::singleline(&mut self.parameters.bound_length),
+                );
+            });
+            ui.horizontal(|ui| {
+                let vision_radius_label = ui.label("Vision Radius: ");
+                ui.add(
+                    egui::TextEdit::singleline(&mut self.parameters.vision_radius),
+                );
+            });
+            if ui.button("Set Parameters").clicked() {
+                self.model = Model::from_parameters(ctx, &mut self.parameters);
+            }
+            if ui.button("Disco Mode").clicked() {
+                match self.disco_mode {
+                    PlayState::play => {
+                        self.disco_mode = self.disco_mode.swap();
+                        self.assets.disco_music.pause();
+                    }
+                    PlayState::paused => {
+                        self.disco_mode = self.disco_mode.swap();
+                        self.assets.disco_music.play(ctx);
                     }
                 }
-            });
+            }
+        });
         self.gui.update(ctx);
 
         // Pause logic
@@ -110,14 +137,10 @@ impl event::EventHandler<ggez::GameError> for MainState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
-        let mut canvas =
-            graphics::Canvas::from_frame(ctx, graphics::Color::from(DBLUE));
+        let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::from(DBLUE));
 
         self.model.draw(ctx, &mut canvas, &self.disco_mode);
-        canvas.draw(
-            &self.gui, 
-            graphics::DrawParam::default().dest(Vec2::ZERO),
-        );
+        canvas.draw(&self.gui, graphics::DrawParam::default().dest(Vec2::ZERO));
         canvas.finish(ctx)?;
 
         self.frames += 1;
@@ -129,42 +152,42 @@ impl event::EventHandler<ggez::GameError> for MainState {
     }
 
     fn key_down_event(
-            &mut self,
-            ctx: &mut Context,
-            input: ggez::input::keyboard::KeyInput,
-            _repeated: bool,
-        ) -> Result<(), ggez::GameError> {
-
+        &mut self,
+        ctx: &mut Context,
+        input: ggez::input::keyboard::KeyInput,
+        _repeated: bool,
+    ) -> Result<(), ggez::GameError> {
         println!("Key pressed");
         match input.keycode {
-            Some(val) => {
-                match val {
-                    ggez::input::keyboard::KeyCode::Space => { 
-                        let new_play_state = self.play_state.swap();
-                        self.play_state = new_play_state;
-                    },
-                    ggez::input::keyboard::KeyCode::B => {
-                        let new_bc = self.model.boundary_condition.swap();
-                        self.model.boundary_condition = new_bc;
-                    },
-                    ggez::input::keyboard::KeyCode:: D => {
-                        match self.disco_mode {
-                            PlayState::play => {
-                                self.disco_mode = self.disco_mode.swap();
-                                self.assets.disco_music.pause();
-                            },
-                            PlayState::paused => {
-                                self.disco_mode = self.disco_mode.swap();
-                                self.assets.disco_music.play(ctx)?;
-                            }
-                        }
-                    }
-                    _ => (),
+            Some(val) => match val {
+                ggez::input::keyboard::KeyCode::Space => {
+                    let new_play_state = self.play_state.swap();
+                    self.play_state = new_play_state;
                 }
+                ggez::input::keyboard::KeyCode::B => {
+                    let new_bc = self.model.boundary_condition.swap();
+                    self.model.boundary_condition = new_bc;
+                }
+                ggez::input::keyboard::KeyCode::D => match self.disco_mode {
+                    PlayState::play => {
+                        self.disco_mode = self.disco_mode.swap();
+                        self.assets.disco_music.pause();
+                    }
+                    PlayState::paused => {
+                        self.disco_mode = self.disco_mode.swap();
+                        self.assets.disco_music.play(ctx)?;
+                    }
+                },
+                _ => (),
             },
             _ => (),
         }
-        Ok(()) 
+        Ok(())
+    }
+
+    fn text_input_event(&mut self, _ctx: &mut Context, character: char) -> Result<(), ggez::GameError> {
+        self.gui.input.text_input_event(character);
+        Ok(())
     }
 }
 
@@ -187,13 +210,12 @@ pub fn start_game() -> GameResult {
         path::PathBuf::from("./resources")
     };
 
-    let cb = ggez::ContextBuilder::new("boids", "ggez")
-        .add_resource_path(resource_dir);
+    let cb = ggez::ContextBuilder::new("boids", "ggez").add_resource_path(resource_dir);
     let (mut ctx, event_loop) = cb.build()?;
 
     let mut w_pos = ctx.gfx.window_position().unwrap();
-    w_pos.x = (1920 - WINDOW_WIDTH as i32)/2;
-    w_pos.y = (1200 - WINDOW_HEIGHT as i32)/2;
+    w_pos.x = (1920 - WINDOW_WIDTH as i32) / 2;
+    w_pos.y = (1200 - WINDOW_HEIGHT as i32) / 2;
     ctx.gfx.set_window_position(w_pos);
     ctx.gfx.set_drawable_size(WINDOW_WIDTH, WINDOW_HEIGHT)?;
     let state = MainState::new(&mut ctx)?;

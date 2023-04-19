@@ -1,5 +1,5 @@
-use ggez::glam::Vec2;
 use crate::boid::Agent;
+use ggez::glam::Vec2;
 
 pub struct Cell {
     pub ymin: f32,
@@ -7,7 +7,7 @@ pub struct Cell {
     pub xmin: f32,
     pub xmax: f32,
     r_hat: f32,
-    pub agents: Vec<Agent>, 
+    pub agents: Vec<Agent>,
 }
 
 pub struct Grid {
@@ -19,15 +19,15 @@ pub struct Grid {
 impl Cell {
     pub fn new(i: usize, j: usize, r_hat: f32) -> Cell {
         Cell {
-            ymin:  i as f32 * r_hat,
+            ymin: i as f32 * r_hat,
             ymax: ((i as f32) + 1.0) * r_hat,
             xmin: j as f32 * r_hat,
-            xmax: ((j as f32)+1.0)*r_hat,
+            xmax: ((j as f32) + 1.0) * r_hat,
             r_hat,
             agents: Vec::new(),
         }
     }
-    
+
     pub fn push_agent(&mut self, agent: Agent) {
         self.agents.push(agent);
     }
@@ -50,14 +50,13 @@ impl Grid {
                     cells.push(inner);
                 }
                 cells
-            }
-
+            },
         }
     }
 
     pub fn cell_finder(&self, pos: &Vec2) -> (usize, usize) {
-        let i = (((pos.x/self.r_hat).floor() as usize)+self.num_cells)%self.num_cells; 
-        let j = (((pos.y/self.r_hat).floor() as usize)+self.num_cells)%self.num_cells;  
+        let i = (((pos.x / self.r_hat).floor() as usize) + self.num_cells) % self.num_cells;
+        let j = (((pos.y / self.r_hat).floor() as usize) + self.num_cells) % self.num_cells;
         (i, j)
     }
 
@@ -65,5 +64,4 @@ impl Grid {
         let (i, j) = self.cell_finder(&agent.positions.last().unwrap());
         self.cells[i][j].push_agent(agent);
     }
-    
 }
