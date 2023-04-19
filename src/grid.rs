@@ -56,8 +56,8 @@ impl Grid {
     }
 
     pub fn cell_finder(&self, pos: &Vec2) -> (usize, usize) {
-        let i = ((pos.x/self.r_hat).floor()) as usize; 
-        let j = ((pos.y/self.r_hat).floor()) as usize; 
+        let i = (((pos.x/self.r_hat).floor() as usize)+self.num_cells)%self.num_cells; 
+        let j = (((pos.y/self.r_hat).floor() as usize)+self.num_cells)%self.num_cells;  
         (i, j)
     }
 

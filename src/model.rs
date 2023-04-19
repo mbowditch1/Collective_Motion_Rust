@@ -5,6 +5,7 @@ use rand::Rng;
 use ggez::{Context, graphics};
 use ggez::glam::Vec2;
 use crate::graphics::{WINDOW_HEIGHT, DT, WINDOW_WIDTH, PlayState, BOID_SIZE};
+use std::f32::consts::PI;
 
 pub struct Time {
     times: Vec<f32>,
@@ -35,7 +36,7 @@ impl Time {
 }
 
 pub enum BC {
-    Soft,
+    Soft(f32),
     Periodic,
     Hard,
 }
@@ -43,9 +44,9 @@ pub enum BC {
 impl BC {
     pub fn swap(&self) -> Self {
         match self {
-            Self::Soft => Self::Periodic, 
+            Self::Soft(_) => Self::Periodic, 
             Self::Periodic => Self::Hard, 
-            Self::Hard => Self::Soft, 
+            Self::Hard => Self::Soft(0.5),  // swap function currently gives default soft br
         }
     }
 }
@@ -57,6 +58,20 @@ pub fn periodic_dist(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32) -> f32 {
     distance_vec.length() 
 }
 
+pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2 {
+    let mut vec = Vec2::ZERO;
+    if pos.x < boundary_range {
+        vec.x = ((pos.x*PI)/(2.0*bound_length)).cos();
+    } else if pos.x > bound_length-boundary_range {
+        vec.x = -1.0*((((bound_length-pos.x)*PI)/(2.0*boundary_range)).cos());
+    } 
+    if pos.y < boundary_range {
+        vec.y = ((pos.y*PI)/(2.0*bound_length)).cos();
+    } else if pos.y > bound_length-boundary_range {
+        vec.y = -1.0*((((bound_length-pos.y)*PI)/(2.0*boundary_range)).cos());
+    } 
+    vec
+}
 
 pub struct Model {
     num_agents: i32,
@@ -88,14 +103,23 @@ impl Model {
             bound_length,
             scale: WINDOW_WIDTH/bound_length,
             vision_radius,
-            boundary_condition: BC::Periodic,
+            boundary_condition: BC::Soft(0.3),
         }
     }
 
     pub fn step(&mut self) {
+        let mut bound_vel = Vec2::ZERO;
         for c_i in 0..self.grid.num_cells { 
             for c_j in 0..self.grid.num_cells { 
                 for i in 0..self.grid.cells[c_i][c_j].agents.len() {
+                    // Soft boundary velocity
+                    match self.boundary_condition {
+                        BC::Soft(br) => { 
+                            //if c_i == 0 || c_j == 0 || c_i == self.grid.num_cells-1 || c_j == self.grid.num_cells-1{
+                            bound_vel = soft_boundary(&self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index], self.bound_length, br); 
+                        },
+                        _ => (),
+                    }
                     let mut new_vel = Vec2::ZERO;
                     let mut num_nearby: i32 = 0;
                     for n in 0..3 {
@@ -125,6 +149,8 @@ impl Model {
                     } else {
                         new_vel = self.grid.cells[c_i][c_j].agents[i].velocities[self.times.current_index].clone();
                     }
+                    //println!("Bound_vel {}, {}", bound_vel.x, bound_vel.y);
+                    new_vel = new_vel+bound_vel;
                     let mut rng = rand::thread_rng(); 
                     let normal = Normal::new(0.0, 0.05).unwrap();
                     new_vel.x += normal.sample(&mut rng);
