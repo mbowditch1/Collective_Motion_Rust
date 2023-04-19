@@ -1,4 +1,4 @@
-use crate::graphics::{PlayState, BOID_SIZE, LRED, CREAM, WINDOW_HEIGHT, WINDOW_WIDTH};
+use crate::graphics::{PlayState, BOID_SIZE, LRED, CREAM, WINDOW_HEIGHT, WINDOW_WIDTH, GUIPreyParams, GUIPredParams};
 use crate::model::Time;
 use ggez::glam::{Mat2, Vec2};
 use ggez::{graphics, Context};
@@ -23,17 +23,201 @@ pub fn clamp(val: f32, min: f32, max: f32) -> Clamped {
 
 #[derive(Debug)]
 pub enum AgentType {
-    Prey([f32; 4]),
-    Predator([f32; 4]),
+    Prey([f32; 4], PreyParams, ),
+    Predator([f32; 4], PredParams,),
+}
+
+#[derive(Debug)]
+pub struct PredParams {
+    pub current_direction: f32,
+    pub prey_alignment: f32,
+    pub prey_centering: f32,
+    pub nearest_prey: f32,
+    pub predator_alignment: f32,
+    pub predator_centering: f32,
+    pub boundary: f32,
+}
+
+#[derive(Debug)]
+pub struct PreyParams {
+    pub current_direction: f32,
+    pub prey_alignment: f32,
+    pub prey_centering: f32,
+    pub predator_alignment: f32,
+    pub predator_centering: f32,
+    pub boundary: f32,
+}
+
+impl PreyParams {
+    pub fn new() -> PreyParams {
+        PreyParams { current_direction: (0.0), prey_alignment: (1.0), prey_centering: (0.0),  predator_alignment: (10.0), predator_centering: (0.0), boundary: (20.0) }
+    }
+
+    pub fn from_params(gui_params: &mut GUIPreyParams) -> PreyParams {
+        let current_direction;
+        let prey_alignment;
+        let prey_centering;
+        let predator_alignment;
+        let predator_centering;
+        let boundary;
+        match gui_params.current_direction.parse::<f32>() {
+            Ok(v) =>  current_direction = v,
+            Err(_E) => {
+                println!("Please enter a valid current_direction. Setting to default");
+                current_direction = 0.0;
+                gui_params.current_direction = 0.0.to_string();
+            },
+        };
+        match gui_params.prey_alignment.parse::<f32>() {
+            Ok(v) =>  prey_alignment = v,
+            Err(_E) => {
+                println!("Please enter a valid prey_alignment. Setting to default");
+                prey_alignment = 1.0;
+                gui_params.prey_alignment = 1.0.to_string();
+            },
+        };
+        match gui_params.prey_centering.parse::<f32>() {
+            Ok(v) =>  prey_centering = v,
+            Err(_E) => {
+                println!("Please enter a valid prey_centering. Setting to default");
+                prey_centering = 0.0;
+                gui_params.prey_centering = 0.0.to_string();
+            },
+        };
+        match gui_params.predator_alignment.parse::<f32>() {
+            Ok(v) =>  predator_alignment = v,
+            Err(_E) => {
+                println!("Please enter a valid predator_alignment. Setting to default");
+                predator_alignment = 0.0;
+                gui_params.predator_alignment = 0.0.to_string();
+            },
+        };
+        match gui_params.predator_centering.parse::<f32>() {
+            Ok(v) =>  predator_centering = v,
+            Err(_E) => {
+                println!("Please enter a valid predator_centering. Setting to default");
+                predator_centering = 10.0;
+                gui_params.predator_centering = 10.0.to_string();
+            },
+        };
+        match gui_params.boundary.parse::<f32>() {
+            Ok(v) =>  boundary = v,
+            Err(_E) => {
+                println!("Please enter a valid boundary. Setting to default");
+                boundary = 20.0;
+                gui_params.boundary = 20.0.to_string();
+            },
+        };
+        PreyParams {
+            current_direction,
+            prey_alignment,
+            prey_centering,
+            predator_alignment,
+            predator_centering,
+            boundary,
+        }
+    }
+}
+
+impl PredParams {
+    pub fn new() -> PredParams {
+        PredParams { current_direction: (0.0), prey_alignment: (0.0), prey_centering: (0.0), nearest_prey: (1.0), predator_alignment: (0.0), predator_centering: (0.0), boundary: (10.0) }
+    }
+
+    pub fn from_params(gui_params: &mut GUIPredParams) -> PredParams {
+        let current_direction;
+        let prey_alignment;
+        let prey_centering;
+        let nearest_prey;
+        let predator_alignment;
+        let predator_centering;
+        let boundary;
+        match gui_params.current_direction.parse::<f32>() {
+            Ok(v) =>  current_direction = v,
+            Err(_E) => {
+                println!("Please enter a valid current_direction. Setting to default");
+                current_direction = 0.0;
+                gui_params.current_direction = 0.0.to_string();
+            },
+        };
+        match gui_params.prey_alignment.parse::<f32>() {
+            Ok(v) =>  prey_alignment = v,
+            Err(_E) => {
+                println!("Please enter a valid prey_alignment. Setting to default");
+                prey_alignment = 0.0;
+                gui_params.prey_alignment = 0.0.to_string();
+            },
+        };
+        match gui_params.prey_centering.parse::<f32>() {
+            Ok(v) =>  prey_centering = v,
+            Err(_E) => {
+                println!("Please enter a valid prey_centering. Setting to default");
+                prey_centering = 0.0;
+                gui_params.prey_centering = 0.0.to_string();
+            },
+        };
+        match gui_params.nearest_prey.parse::<f32>() {
+            Ok(v) =>  nearest_prey = v,
+            Err(_E) => {
+                println!("Please enter a valid nearest_prey. Setting to default");
+                nearest_prey = 1.0;
+                gui_params.nearest_prey = 1.0.to_string();
+            },
+        };
+        match gui_params.predator_alignment.parse::<f32>() {
+            Ok(v) =>  predator_alignment = v,
+            Err(_E) => {
+                println!("Please enter a valid predator_alignment. Setting to default");
+                predator_alignment = 0.0;
+                gui_params.predator_alignment = 0.0.to_string();
+            },
+        };
+        match gui_params.predator_centering.parse::<f32>() {
+            Ok(v) =>  predator_centering = v,
+            Err(_E) => {
+                println!("Please enter a valid predator_centering. Setting to default");
+                predator_centering = 0.0;
+                gui_params.predator_centering = 0.0.to_string();
+            },
+        };
+        match gui_params.boundary.parse::<f32>() {
+            Ok(v) =>  boundary = v,
+            Err(_E) => {
+                println!("Please enter a valid boundary. Setting to default");
+                boundary = 10.0;
+                gui_params.boundary = 10.0.to_string();
+            },
+        };
+        PredParams {
+            current_direction,
+            prey_alignment,
+            prey_centering,
+            nearest_prey,
+            predator_alignment,
+            predator_centering,
+            boundary,
+        }
+    }
 }
 
 impl AgentType {
+    //  currrent direction, alignment, centering, predator repulsion (positions), predator
+    //   alignment, boundaries 
     pub fn new_prey() -> AgentType {
-        AgentType::Prey(CREAM)
+        AgentType::Prey(CREAM, PreyParams::new(),)
     }
 
+    //  currrent direction, prey alignment, prey centering, nearest prey, predator alignment (positions), predator centering, boundaries
     pub fn new_predator() -> AgentType {
-        AgentType::Predator(LRED)
+        AgentType::Predator(LRED, PredParams::new(),)
+    }
+
+    pub fn prey_from_params(prey_params: PreyParams) -> AgentType {
+        AgentType::Prey(CREAM, prey_params,)
+    }
+
+    pub fn pred_from_params(pred_params: PredParams) -> AgentType {
+        AgentType::Predator(LRED, pred_params,)
     }
 }
 
@@ -137,7 +321,7 @@ impl Agent {
                     1.0,
                 ]
             }
-            PlayState::paused => match self.agent_type { AgentType::Prey(val) => colour=val, AgentType::Predator(val) => colour=val},
+            PlayState::paused => match self.agent_type { AgentType::Prey(val, _) => colour=val, AgentType::Predator(val, _) => colour=val},
         }
         let drawparams = graphics::DrawParam::new()
             .dest(next_pos)

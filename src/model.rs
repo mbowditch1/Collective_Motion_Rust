@@ -1,4 +1,4 @@
-use crate::boid::{AgentType,Agent};
+use crate::boid::{PreyParams, PredParams, AgentType,Agent};
 use crate::graphics::GUIParameters;
 use crate::graphics::{PlayState, BOID_SIZE, DT, WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::grid::Grid;
@@ -61,6 +61,13 @@ pub fn periodic_dist(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32) -> f32 {
     distance_vec.length()
 }
 
+pub fn distance(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32, bc: &BC) -> f32 {
+    match bc {
+        BC::Periodic => periodic_dist(vec_1, vec_2, bound_length),
+        _ => vec_1.distance(*vec_2),
+    }
+}
+
 pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2 {
     let mut vec = Vec2::ZERO;
     if pos.x < boundary_range {
@@ -82,6 +89,8 @@ pub struct Model {
     bound_length: f32,
     scale: f32,
     vision_radius: f32,
+    predator_vision_radius: f32,
+    vision_ratio: usize,
     pub boundary_condition: BC,
     pub grid: Grid,
 }
@@ -91,7 +100,9 @@ impl Model {
         // DEFAULTS
         let bound_length = 10.0;
         let num_agents = 100;
-        let vision_radius = 1.0;
+        let vision_radius: f32 = 1.0;
+        let predator_vision_radius: f32 = 3.0;
+        let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
 
         // Create grid and assign agents
         let mut grid = Grid::new(vision_radius, bound_length);
@@ -99,6 +110,9 @@ impl Model {
             let agent = Agent::new(ctx, bound_length, AgentType::new_prey());
             grid.push_agent(agent);
         }
+        // REMOVE
+        let predator = Agent::new(ctx, bound_length, AgentType::new_predator());
+        grid.push_agent(predator);
         Model {
             num_agents,
             grid,
@@ -106,6 +120,8 @@ impl Model {
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
             vision_radius,
+            predator_vision_radius,
+            vision_ratio,
             boundary_condition: BC::Soft(0.3),
         }
     }
@@ -114,6 +130,7 @@ impl Model {
         // DEFAULTS
         let bound_length: f32;
         let vision_radius: f32;
+        let predator_vision_radius = 3.0;
         match parameters.bound_length.parse::<f32>() {
             Ok(bl) => bound_length = bl,
             Err(_E) => {
@@ -131,13 +148,16 @@ impl Model {
             },
         }
         let num_agents = 100;
+        let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
 
         // Create grid and assign agents
         let mut grid = Grid::new(vision_radius, bound_length);
         for a in 0..num_agents {
-            let agent = Agent::new(ctx, bound_length, AgentType::new_prey());
+            let agent = Agent::new(ctx, bound_length, AgentType::prey_from_params(PreyParams::from_params(&mut parameters.prey_params)));
             grid.push_agent(agent);
         }
+        let predator = Agent::new(ctx, bound_length, AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)));
+        grid.push_agent(predator);
         Model {
             num_agents,
             grid,
@@ -145,6 +165,8 @@ impl Model {
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
             vision_radius,
+            predator_vision_radius,
+            vision_ratio,
             boundary_condition: BC::Soft(0.3),
         }
     }
@@ -164,13 +186,20 @@ impl Model {
                                 self.bound_length,
                                 br,
                             );
+                            if bound_vel != Vec2::ZERO {
+                                bound_vel = bound_vel.normalize();
+                            }
                         }
                         _ => (),
                     }
-                    let mut new_vel = match self.grid.cells[c_i][c_j].agents[i].agent_type {
-                        AgentType::Prey(_) => {
+                    let mut new_vel = match &self.grid.cells[c_i][c_j].agents[i].agent_type {
+                        AgentType::Prey(_, params) => {
                             let mut align_vel = Vec2::ZERO;
+                            let mut pos_vel = Vec2::ZERO;
+                            let mut pred_pos_vel = Vec2::ZERO;
+                            let mut pred_align_vel = Vec2::ZERO;
                             let mut num_nearby: i32 = 0;
+                            let mut pred_num_nearby: i32 = 0;
                             for n in 0..3 {
                                 for m in 0..3 {
                                     let index_i = (c_i as i32 + n as i32 + self.grid.num_cells as i32
@@ -183,25 +212,40 @@ impl Model {
                                         .agents
                                         .iter()
                                     {
-                                        let dist: f32;
-                                        match self.boundary_condition {
-                                            BC::Periodic => {
-                                                dist = periodic_dist(
-                                                    &self.grid.cells[c_i][c_j].agents[i].positions
-                                                        [self.times.current_index],
-                                                    &a_2.positions[self.times.current_index],
-                                                    self.bound_length,
-                                                );
-                                            }
-                                            _ => {
-                                                dist = self.grid.cells[c_i][c_j].agents[i].positions
-                                                    [self.times.current_index]
-                                                    .distance(a_2.positions[self.times.current_index])
-                                            }
-                                        };
-                                        if dist < self.vision_radius {
-                                            align_vel += a_2.velocities[self.times.current_index];
-                                            num_nearby += 1;
+                                        let dist: f32 = distance(
+                                            &self.grid.cells[c_i][c_j].agents[i].positions
+                                                [self.times.current_index],
+                                            &a_2.positions[self.times.current_index],
+                                            self.bound_length,
+                                            &self.boundary_condition,
+                                        );
+
+                                        // Only align if prey
+                                        match a_2.agent_type {
+                                            AgentType::Prey(..) => { 
+                                                if dist < self.vision_radius {
+                                                    align_vel += a_2.velocities[self.times.current_index];
+                                                    pos_vel += distance(
+                                                        &self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index], 
+                                                        &a_2.positions[self.times.current_index],
+                                                        self.bound_length,
+                                                        &self.boundary_condition,
+                                                    );
+                                                    num_nearby += 1;
+                                                }  
+                                            },
+                                            AgentType::Predator(..) => {
+                                                if dist < self.vision_radius {
+                                                    pred_align_vel += a_2.velocities[self.times.current_index];
+                                                    pred_pos_vel += distance(
+                                                        &self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index], 
+                                                        &a_2.positions[self.times.current_index],
+                                                        self.bound_length,
+                                                        &self.boundary_condition,
+                                                    );
+                                                    pred_num_nearby += 1;
+                                                }
+                                            },
                                         }
                                     }
                                 }
@@ -209,16 +253,59 @@ impl Model {
 
                             if num_nearby > 0 {
                                 align_vel = align_vel / num_nearby as f32;
+                                pos_vel = pos_vel / num_nearby as f32;
                             } else {
                                 align_vel = self.grid.cells[c_i][c_j].agents[i].velocities
                                     [self.times.current_index]
                                     .clone();
                             }
 
-                            align_vel + bound_vel
+                            if pred_num_nearby > 0 {
+                                pred_align_vel = -1.0* pred_align_vel / num_nearby as f32;
+                                pred_pos_vel = -1.0*pred_pos_vel / num_nearby as f32;
+                            } 
+                            params.prey_alignment*align_vel + params.boundary*bound_vel + params.predator_centering*pred_pos_vel
                         },
-                        _ => Vec2::ZERO,
+                        AgentType::Predator(_, params) => {
+                            let mut chase_vel = Vec2::ZERO; 
+                            let mut min_dist = self.bound_length;
+                            for n in 0..self.vision_ratio+2 {
+                                for m in 0..self.vision_ratio+2 {
+                                    let index_i = (c_i as i32 + n as i32 + self.grid.num_cells as i32
+                                        - self.vision_ratio as i32)
+                                        % self.grid.num_cells as i32;
+                                    let index_j = (c_j as i32 + m as i32 + self.grid.num_cells as i32
+                                        - self.vision_ratio as i32)
+                                        % self.grid.num_cells as i32;
+                                    for a_2 in self.grid.cells[index_i as usize][index_j as usize]
+                                        .agents
+                                        .iter()
+                                    {
+                                        let dist: f32 = distance(
+                                            &self.grid.cells[c_i][c_j].agents[i].positions
+                                                [self.times.current_index],
+                                            &a_2.positions[self.times.current_index],
+                                            self.bound_length,
+                                            &self.boundary_condition,
+                                        );
+
+                                        // Only chase if prey
+                                        match a_2.agent_type {
+                                            AgentType::Prey(..) => { 
+                                                if (dist < self.vision_radius) && (dist < min_dist) {
+                                                    chase_vel = a_2.positions[self.times.current_index] - self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index];
+                                                    min_dist = dist;
+                                                }  
+                                            },
+                                            AgentType::Predator(..) => (),
+                                        }
+                                    }
+                                }
+                            }
+                            params.nearest_prey*chase_vel
+                        },
                     };
+                    new_vel = new_vel.normalize();
                     let mut rng = rand::thread_rng();
                     let normal = Normal::new(0.0, 0.05).unwrap();
                     new_vel.x += normal.sample(&mut rng);
