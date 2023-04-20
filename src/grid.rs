@@ -7,7 +7,7 @@ pub struct Cell {
     pub xmin: f32,
     pub xmax: f32,
     r_hat: f32,
-    pub agents: Vec<Agent>,
+    pub agent_indices: Vec<usize>,
 }
 
 pub struct Grid {
@@ -24,12 +24,12 @@ impl Cell {
             xmin: j as f32 * r_hat,
             xmax: ((j as f32) + 1.0) * r_hat,
             r_hat,
-            agents: Vec::new(),
+            agent_indices: Vec::new(),
         }
     }
 
-    pub fn push_agent(&mut self, agent: Agent) {
-        self.agents.push(agent);
+    pub fn push_agent(&mut self, index: usize) {
+        self.agent_indices.push(index);
     }
 }
 
@@ -60,8 +60,8 @@ impl Grid {
         (i, j)
     }
 
-    pub fn push_agent(&mut self, agent: Agent) {
-        let (i, j) = self.cell_finder(&agent.positions.last().unwrap());
-        self.cells[i][j].push_agent(agent);
+    pub fn push_agent(&mut self, position: &Vec2, index: usize) {
+        let (i, j) = self.cell_finder(position);
+        self.cells[i][j].push_agent(index);
     }
 }

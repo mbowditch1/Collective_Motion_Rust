@@ -455,7 +455,7 @@ impl Agent {
         
         match &self.polygon {
             Some(pol) => canvas.draw(pol, drawparams),
-            _ => ()
+            _ => println!("HERE"), 
         }
     }
 

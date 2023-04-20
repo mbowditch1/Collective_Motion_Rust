@@ -88,8 +88,9 @@ pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2
 }
 
 pub struct Model {
-    num_agents: i32,
+    num_agents: usize,
     pub times: Time,
+    pub agents: Vec<Agent>,
     bound_length: f32,
     scale: f32,
     vision_radius: f32,
@@ -107,18 +108,22 @@ impl Model {
         let vision_radius: f32 = 1.0;
         let predator_vision_radius: f32 = 3.0;
         let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
+        let mut agents = Vec::new();
 
-        // Create grid and assign agents
+        // Create agents
         let mut grid = Grid::new(vision_radius, bound_length);
         for a in 0..num_agents {
             let agent = Agent::new(bound_length, AgentType::new_prey());
-            grid.push_agent(agent);
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
         }
+
         // REMOVE
-        let predator = Agent::new(bound_length, AgentType::new_predator());
-        grid.push_agent(predator);
+        //let predator = Agent::new(bound_length, AgentType::new_predator());
+        //grid.push_agent(predator);
         Model {
             num_agents,
+            agents,
             grid,
             times: Time::new(DT, 50.0),
             bound_length,
@@ -137,18 +142,22 @@ impl Model {
         let vision_radius: f32 = 1.0;
         let predator_vision_radius: f32 = 3.0;
         let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
+        let mut agents = Vec::new();
 
         // Create grid and assign agents
         let mut grid = Grid::new(vision_radius, bound_length);
         for a in 0..num_agents {
             let agent = Agent::new_graphical(ctx, bound_length, AgentType::new_prey());
-            grid.push_agent(agent);
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
         }
+
         // REMOVE
         //let predator = Agent::new_graphical(ctx, bound_length, AgentType::new_predator());
         //grid.push_agent(predator);
         Model {
             num_agents,
+            agents,
             grid,
             times: Time::new(DT, 50.0),
             bound_length,
@@ -184,19 +193,20 @@ impl Model {
         let num_agents = 1000;
         let num_predators = 5;
         let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
+        let mut agents = Vec::new();
 
         // Create grid and assign agents
         let mut grid = Grid::new(vision_radius, bound_length);
         for a in 0..num_agents {
-            let agent = Agent::new_graphical(ctx, bound_length, AgentType::prey_from_params(PreyParams::from_params(&mut parameters.prey_params)));
-            grid.push_agent(agent);
+            let agent = Agent::new_graphical(ctx, bound_length, AgentType::new_prey());
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
         }
-        for a in 0..num_predators {
-            let predator = Agent::new_graphical(ctx, bound_length, AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)));
-            grid.push_agent(predator);
-        }
+        //let predator = Agent::new_graphical(ctx, bound_length, AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)));
+        //grid.push_agent(predator);
         Model {
             num_agents,
+            agents,
             grid,
             times: Time::new(DT, 50.0),
             bound_length,
@@ -217,16 +227,15 @@ impl Model {
     pub fn step(&mut self) {
         for c_i in 0..self.grid.num_cells {
             for c_j in 0..self.grid.num_cells {
-                for i in 0..self.grid.cells[c_i][c_j].agents.len() {
-                    let a_1 = &self.grid.cells[c_i][c_j].agents[i];
+                for a_1_i in 0..self.grid.cells[c_i][c_j].agent_indices.len() {
+                    let a_1_index = self.grid.cells[c_i][c_j].agent_indices[a_1_i];
                     let mut bound_vel = Vec2::ZERO;
                     // Soft boundary velocity
                     match self.boundary_condition {
                         BC::Soft(br) => {
                             //if c_i == 0 || c_j == 0 || c_i == self.grid.num_cells-1 || c_j == self.grid.num_cells-1{
                             bound_vel = soft_boundary(
-                                &self.grid.cells[c_i][c_j].agents[i].positions
-                                    [self.times.current_index],
+                                &self.agents[a_1_index].positions[self.times.current_index],
                                 self.bound_length,
                                 br,
                             );
@@ -236,7 +245,7 @@ impl Model {
                         }
                         _ => (),
                     }
-                    let mut F_j = match &self.grid.cells[c_i][c_j].agents[i].agent_type {
+                    let F_j = match &self.agents[a_1_index].agent_type {  
                         AgentType::Prey(_, params) => {
                             let mut align_vel = Vec2::ZERO;
                             let mut attraction = Vec2::ZERO;
@@ -254,13 +263,14 @@ impl Model {
                                     let index_j = (c_j as i32 + m as i32 + self.grid.num_cells as i32
                                         - 1 as i32)
                                         % self.grid.num_cells as i32;
-                                    for a_2 in self.grid.cells[index_i as usize][index_j as usize]
-                                        .agents
-                                        .iter()
+                                    for a_2_i in 0..self.grid.cells[index_i as usize][index_j as usize]
+                                        .agent_indices.len()
                                     {
+                                        let a_2_index = self.grid.cells[index_i as usize][index_j as usize].agent_indices[a_2_i];
+
                                         let dist: f32 = distance(
-                                            &a_1.positions[self.times.current_index],
-                                            &a_2.positions[self.times.current_index],
+                                            &self.agents[a_1_index].positions[self.times.current_index],
+                                            &self.agents[a_2_index].positions[self.times.current_index],
                                             self.bound_length,
                                             &self.boundary_condition,
                                         );
@@ -268,20 +278,20 @@ impl Model {
                                         // Only align if prey
                                         // Don't count yourself
                                         if dist > 0.0000001 { 
-                                            match a_2.agent_type {
+                                            match &self.agents[a_2_index].agent_type {
                                                 AgentType::Prey(..) => { 
                                                     if dist < self.vision_radius {
-                                                        align_vel += a_2.velocities[self.times.current_index] - a_1.velocities[self.times.current_index];
-                                                        let curr_repulsion = distance_vec(a_1.positions.last().unwrap(), a_2.positions.last().unwrap(), self.bound_length, &self.boundary_condition); 
+                                                        align_vel += self.agents[a_2_index].velocities[self.times.current_index] - self.agents[a_1_index].velocities[self.times.current_index];
+                                                        let curr_repulsion = distance_vec(self.agents[a_1_index].positions.last().unwrap(), self.agents[a_2_index].positions.last().unwrap(), self.bound_length, &self.boundary_condition); 
                                                         prey_repulsion += curr_repulsion/curr_repulsion.length_squared(); 
-                                                        attraction += distance_vec(a_1.positions.last().unwrap(), a_2.positions.last().unwrap(), self.bound_length, &self.boundary_condition);
+                                                        attraction += distance_vec(self.agents[a_1_index].positions.last().unwrap(), self.agents[a_2_index].positions.last().unwrap(), self.bound_length, &self.boundary_condition);
                                                         num_nearby += 1;
                                                     }  
                                                 },
                                                 AgentType::Predator(..) => {
                                                     if dist < self.vision_radius {
-                                                        pred_align_vel += a_2.velocities[self.times.current_index] - a_1.velocities[self.times.current_index];
-                                                        let curr_repulsion = distance_vec(a_1.positions.last().unwrap(), a_2.positions.last().unwrap(), self.bound_length, &self.boundary_condition);
+                                                        pred_align_vel += self.agents[a_2_index].velocities[self.times.current_index] - self.agents[a_1_index].velocities[self.times.current_index];
+                                                        let curr_repulsion = distance_vec(self.agents[a_1_index].positions.last().unwrap(), self.agents[a_2_index].positions.last().unwrap(), self.bound_length, &self.boundary_condition);
                                                         pred_repulsion += curr_repulsion/curr_repulsion.length_squared(); 
                                                         pred_num_nearby += 1;
                                                     }
@@ -334,14 +344,14 @@ impl Model {
                                     let index_j = (c_j as i32 + m as i32 + self.grid.num_cells as i32
                                         - self.vision_ratio as i32)
                                         % self.grid.num_cells as i32;
-                                    for a_2 in self.grid.cells[index_i as usize][index_j as usize]
-                                        .agents
-                                        .iter()
+                                    for a_2_i in 0..self.grid.cells[index_i as usize][index_j as usize]
+                                        .agent_indices.len()
                                     {
+                                        let a_2_index = self.grid.cells[index_i as usize][index_j as usize].agent_indices[a_2_i];
                                         let dist: f32 = distance(
-                                            &self.grid.cells[c_i][c_j].agents[i].positions
+                                            &self.agents[a_1_index].positions
                                                 [self.times.current_index],
-                                            &a_2.positions[self.times.current_index],
+                                            &self.agents[a_2_index].positions[self.times.current_index],
                                             self.bound_length,
                                             &self.boundary_condition,
                                         );
@@ -350,18 +360,18 @@ impl Model {
                                         // Only chase if prey
 
                                         if dist > 0.0000001 { 
-                                            match a_2.agent_type {
+                                            match &self.agents[a_2_index].agent_type {
                                                 AgentType::Prey(..) => { 
                                                     if dist < self.vision_radius {
-                                                        let curr_attraction = distance_vec(a_1.positions.last().unwrap(),a_2.positions.last().unwrap(),self.bound_length,&self.boundary_condition);
+                                                        let curr_attraction = distance_vec(self.agents[a_1_index].positions.last().unwrap(),self.agents[a_2_index].positions.last().unwrap(),self.bound_length,&self.boundary_condition);
                                                         prey_attraction += curr_attraction/(curr_attraction.length_squared()).powf(1.5); 
                                                         num_nearby += 1;
                                                     }  
                                                 },
                                                 AgentType::Predator(..) => {
                                                     if dist < self.vision_radius {
-                                                        pred_alignment += a_2.velocities[self.times.current_index] - a_1.velocities[self.times.current_index];
-                                                        let curr_repulsion = distance_vec(a_1.positions.last().unwrap(),a_2.positions.last().unwrap(),self.bound_length,&self.boundary_condition);
+                                                        pred_alignment += self.agents[a_2_index].velocities[self.times.current_index] - self.agents[a_1_index].velocities[self.times.current_index];
+                                                        let curr_repulsion = distance_vec(self.agents[a_1_index].positions.last().unwrap(),self.agents[a_2_index].positions.last().unwrap(),self.bound_length,&self.boundary_condition);
                                                         pred_repulsion += curr_repulsion/curr_repulsion.length_squared(); 
                                                         pred_num_nearby += 1;
                                                     }
@@ -390,24 +400,21 @@ impl Model {
                             F_j
                         },
                     };
-                    let max_vel = match &self.grid.cells[c_i][c_j].agents[i].agent_type {
+                    let max_vel = match &self.agents[a_1_index].agent_type { 
                         AgentType::Prey(_,params) => params.max_vel,
                         AgentType::Predator(_,params) => params.max_vel,
                     };
-                    self.grid.cells[c_i][c_j].agents[i].update(&mut self.times, F_j, max_vel);
+                    self.agents[a_1_index].update(&mut self.times, F_j, max_vel);
 
                     match self.boundary_condition {
                         BC::Hard => {
-                            self.grid.cells[c_i][c_j].agents[i]
-                                .hard_boundary(&self.times, self.bound_length);
+                            self.agents[a_1_index].hard_boundary(&self.times, self.bound_length);
                         },
                         BC::Periodic => {
-                            self.grid.cells[c_i][c_j].agents[i]
-                                .periodic_boundary(&self.times, self.bound_length);
+                            self.agents[a_1_index].periodic_boundary(&self.times, self.bound_length);
                         },
                         BC::Soft(_) => {
-                            self.grid.cells[c_i][c_j].agents[i]
-                                .hard_boundary(&self.times, self.bound_length);
+                            self.agents[a_1_index].hard_boundary(&self.times, self.bound_length);
                         },
                     }
                 }
@@ -417,26 +424,28 @@ impl Model {
         for c_i in 0..self.grid.num_cells {
             for c_j in 0..self.grid.num_cells {
                 let mut indices: Vec<usize> = Vec::new();
-                for a in 0..self.grid.cells[c_i][c_j].agents.len() {
-                    if !(self.grid.cells[c_i][c_j].agents[a]
+                for a_i in 0..self.grid.cells[c_i][c_j].agent_indices.len() {
+                    let a_index = self.grid.cells[c_i][c_j].agent_indices[a_i];
+                    let a_1 = &self.agents[a_index];
+                    if !(a_1
                         .positions
                         .last()
                         .unwrap()
                         .x
                         > self.grid.cells[c_i][c_j].xmin
-                        && self.grid.cells[c_i][c_j].agents[a]
+                        && a_1
                             .positions
                             .last()
                             .unwrap()
                             .x
                             < self.grid.cells[c_i][c_j].xmax
-                        && self.grid.cells[c_i][c_j].agents[a]
+                        && a_1
                             .positions
                             .last()
                             .unwrap()
                             .y
                             < self.grid.cells[c_i][c_j].ymax
-                        && self.grid.cells[c_i][c_j].agents[a]
+                        && a_1 
                             .positions
                             .last()
                             .unwrap()
@@ -444,15 +453,15 @@ impl Model {
                             > self.grid.cells[c_i][c_j].ymin)
                     {
                         // Move agent
-                        indices.push(a);
+                        indices.push(a_i);
                     }
                 }
                 for i in 0..indices.len() {
                     indices[i] -= i;
                 }
                 for i in 0..indices.len() {
-                    let agent = self.grid.cells[c_i][c_j].agents.remove(indices[i] as usize);
-                    self.grid.push_agent(agent);
+                    let agent_index = self.grid.cells[c_i][c_j].agent_indices.remove(indices[i] as usize);
+                    self.grid.push_agent(&self.agents[agent_index].positions[self.times.current_index], agent_index);
                 }
             }
         }
@@ -460,12 +469,8 @@ impl Model {
     }
     // Draw model for current time step
     pub fn draw(&self, ctx: &mut Context, canvas: &mut graphics::Canvas, disco_mode: &PlayState) {
-        for i in 0..self.grid.num_cells {
-            for j in 0..self.grid.num_cells {
-                for a in self.grid.cells[i][j].agents.iter() {
-                    a.draw(ctx, canvas, self.scale, disco_mode);
-                }
-            }
+        for a in self.agents.iter() {
+            a.draw(ctx, canvas, self.scale, disco_mode);
         }
     }
 }

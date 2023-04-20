@@ -8,13 +8,13 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    graphics::start_game();
-    println!("{}", estimated_running_time(1.0/60.0, 50.0, 1000.0));
+    //graphics::start_game();
+    run_test();
 }
 
 fn run_test() {
     let now = Instant::now();
-    for i in 0..1000 {
+    for i in 0..100 {
         let mut model = Model::new();
         let mut times = Time::new(1.0/60.0, 50.0);
         model.times = times; 
