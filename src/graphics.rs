@@ -53,6 +53,8 @@ pub struct GUIPreyParams {
     pub predator_alignment: String,
     pub predator_centering: String,
     pub predator_repulsion: String,
+    pub max_acceleration: String,
+    pub max_vel: String,
     pub boundary: String,
 }
 
@@ -64,6 +66,8 @@ pub struct GUIPredParams {
     pub predator_alignment: String,
     pub predator_centering: String,
     pub predator_repulsion: String,
+    pub max_acceleration: String,
+    pub max_vel: String,
     pub boundary: String,
 }
 
@@ -79,11 +83,13 @@ impl GUIPreyParams {
         GUIPreyParams {
             current_direction: "0".to_owned(),
             prey_alignment: "1".to_owned(),
-            prey_attraction: "0".to_owned(),
-            prey_repulsion: "0".to_owned(),
+            prey_attraction: "0.5".to_owned(),
+            prey_repulsion: "0.25".to_owned(),
             predator_alignment: "0".to_owned(),
-            predator_centering: "10".to_owned(),
-            predator_repulsion: "1.0".to_owned(),
+            predator_centering: "0".to_owned(),
+            predator_repulsion: "10".to_owned(),
+            max_acceleration: "1.0".to_owned(),
+            max_vel: "1.0".to_owned(),
             boundary: "20".to_owned(),
         }
     }
@@ -94,11 +100,13 @@ impl GUIPredParams {
         GUIPredParams {
             current_direction: "0".to_owned(),
             prey_alignment: "0".to_owned(),
-            prey_attraction: "0".to_owned(),
-            nearest_prey: "1".to_owned(),
+            prey_attraction: "1".to_owned(),
+            nearest_prey: "0".to_owned(),
             predator_alignment: "0".to_owned(),
             predator_centering: "0".to_owned(),
             predator_repulsion: "0".to_owned(),
+            max_acceleration: "1.0".to_owned(),
+            max_vel: "1.0".to_owned(),
             boundary: "10".to_owned(),
         }
     }
@@ -168,6 +176,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
             ui.vertical(|ui| {
                 ui.label("Prey Parameters");
                 ui.horizontal(|ui| {
+                    ui.label("Max velocity: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.prey_params.max_vel),
+                    );
+                });
+                ui.horizontal(|ui| {
                     ui.label("Current velocity: ");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.prey_params.current_direction),
@@ -210,6 +224,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     );
                 });
                 ui.horizontal(|ui| {
+                    ui.label("Max Acceleration: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.prey_params.max_acceleration),
+                    );
+                });
+                ui.horizontal(|ui| {
                     ui.label("Boundary: ");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.prey_params.boundary),
@@ -218,6 +238,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
             });
             ui.vertical(|ui| {
                 ui.label("Predator Parameters");
+                ui.horizontal(|ui| {
+                    ui.label("Max velocity: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.pred_params.max_vel),
+                    );
+                });
                 ui.horizontal(|ui| {
                     ui.label("Current velocity: ");
                     ui.add(
@@ -258,6 +284,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
                     ui.label("Predator Repulsion");
                     ui.add(
                         egui::TextEdit::singleline(&mut self.parameters.pred_params.predator_repulsion),
+                    );
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Max Acceleration: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.pred_params.max_acceleration),
                     );
                 });
                 ui.horizontal(|ui| {

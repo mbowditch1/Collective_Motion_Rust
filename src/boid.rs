@@ -36,6 +36,8 @@ pub struct PredParams {
     pub predator_alignment: f32,
     pub predator_attraction: f32,
     pub predator_repulsion: f32,
+    pub max_acceleration: f32,
+    pub max_vel: f32,
     pub boundary: f32,
 }
 
@@ -48,12 +50,14 @@ pub struct PreyParams {
     pub predator_alignment: f32,
     pub predator_centering: f32,
     pub predator_repulsion: f32,
+    pub max_acceleration: f32,
+    pub max_vel: f32,
     pub boundary: f32,
 }
 
 impl PreyParams {
     pub fn new() -> PreyParams {
-        PreyParams { current_direction: (0.0), prey_attraction: (0.0), prey_alignment: (1.0), prey_repulsion: (0.0), predator_alignment: (0.0), predator_centering: (0.0), predator_repulsion: (10.0), boundary: (20.0) }
+        PreyParams { current_direction: (0.0), prey_attraction: (0.5), prey_alignment: (1.0), prey_repulsion: (0.25), predator_alignment: (0.0), predator_centering: (0.0), predator_repulsion: (10.0), boundary: (20.0), max_acceleration: 1.0, max_vel: 1.0 }
     }
 
     pub fn from_params(gui_params: &mut GUIPreyParams) -> PreyParams {
@@ -64,7 +68,25 @@ impl PreyParams {
         let predator_alignment;
         let predator_centering;
         let predator_repulsion;
+        let max_acceleration;
+        let max_vel;
         let boundary;
+        match gui_params.max_vel.parse::<f32>() {
+            Ok(v) =>  max_vel = v,
+            Err(_E) => {
+                println!("Please enter a valid max_vel. Setting to default");
+                max_vel = 1.0;
+                gui_params.max_vel = 1.0.to_string();
+            },
+        };
+        match gui_params.max_acceleration.parse::<f32>() {
+            Ok(v) =>  max_acceleration = v,
+            Err(_E) => {
+                println!("Please enter a valid max_acceleration. Setting to default");
+                max_acceleration = 1.0;
+                gui_params.max_acceleration = 1.0.to_string();
+            },
+        };
         match gui_params.current_direction.parse::<f32>() {
             Ok(v) =>  current_direction = v,
             Err(_E) => {
@@ -85,16 +107,16 @@ impl PreyParams {
             Ok(v) =>  prey_attraction = v,
             Err(_E) => {
                 println!("Please enter a valid prey_centering. Setting to default");
-                prey_attraction = 0.0;
-                gui_params.prey_attraction = 0.0.to_string();
+                prey_attraction = 0.5;
+                gui_params.prey_attraction = 0.5.to_string();
             },
         };
         match gui_params.prey_repulsion.parse::<f32>() {
             Ok(v) =>  prey_repulsion = v,
             Err(_E) => {
                 println!("Please enter a valid prey_repulsion. Setting to default");
-                prey_repulsion = 0.0;
-                gui_params.prey_repulsion = 0.0.to_string();
+                prey_repulsion = 0.25;
+                gui_params.prey_repulsion = 0.25.to_string();
             },
         };
         match gui_params.predator_alignment.parse::<f32>() {
@@ -137,6 +159,8 @@ impl PreyParams {
             predator_alignment,
             predator_centering,
             predator_repulsion,
+            max_acceleration,
+            max_vel,
             boundary,
         }
     }
@@ -144,8 +168,7 @@ impl PreyParams {
 
 impl PredParams {
     pub fn new() -> PredParams {
-        PredParams { current_direction: (0.0), prey_attraction: (1.0), prey_alignment: (0.0), nearest_prey: (1.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0) }
-    }
+        PredParams { current_direction: (0.0), prey_attraction: (1.0), prey_alignment: (0.0), nearest_prey: (0.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0), max_acceleration: 1.0, max_vel:  1.0 } }
 
     pub fn from_params(gui_params: &mut GUIPredParams) -> PredParams {
         let current_direction;
@@ -155,7 +178,25 @@ impl PredParams {
         let predator_alignment;
         let predator_centering;
         let predator_repulsion;
+        let max_acceleration;
+        let max_vel;
         let boundary;
+        match gui_params.max_vel.parse::<f32>() {
+            Ok(v) =>  max_vel = v,
+            Err(_E) => {
+                println!("Please enter a valid max_vel. Setting to default");
+                max_vel = 0.0;
+                gui_params.max_vel = 0.0.to_string();
+            },
+        };
+        match gui_params.max_acceleration.parse::<f32>() {
+            Ok(v) =>  max_acceleration = v,
+            Err(_E) => {
+                println!("Please enter a valid max_acceleration. Setting to default");
+                max_acceleration = 0.0;
+                gui_params.max_acceleration = 0.0.to_string();
+            },
+        };
         match gui_params.current_direction.parse::<f32>() {
             Ok(v) =>  current_direction = v,
             Err(_E) => {
@@ -228,6 +269,8 @@ impl PredParams {
             predator_alignment,
             predator_attraction: predator_centering,
             predator_repulsion,
+            max_acceleration,
+            max_vel,
             boundary,
         }
     }
@@ -351,12 +394,21 @@ impl Agent {
         }
     }
 
-    pub fn update(&mut self, times: &Time, new_vel: Vec2) {
+    pub fn update(&mut self, times: &Time, acceleration: Vec2, max_vel: f32) {
         self.update_pos(times.dt);
-        self.update_vel(new_vel);
+        self.update_vel(times.dt, acceleration, max_vel);
     }
 
-    fn update_vel(&mut self, new_vel: Vec2) {
+    fn update_vel(&mut self, dt: f32, acceleration: Vec2, max_vel: f32) {
+        let last_vel = self.velocities.last().unwrap();
+        let mut new_vel =last_vel.clone() + dt*acceleration;
+        let new_vel_length = new_vel.length();
+        if new_vel_length > 0.000001 {
+            new_vel = new_vel.normalize();
+            new_vel = new_vel*(new_vel_length.min(max_vel));
+        } else {
+            new_vel = Vec2::ZERO;
+        }
         self.velocities.push(new_vel);
     }
 
@@ -375,9 +427,13 @@ impl Agent {
         disco_mode: &PlayState,
     ) {
         let last_pos = (*self.positions.last().unwrap()).clone();
-        let angle =
-            -1.0 * self.velocities.last().unwrap().angle_between(Vec2::Y) + std::f32::consts::PI;
-
+        let angle;
+        if self.velocities.last().unwrap().length() > 0.00001 { 
+            angle =
+                -1.0 * self.velocities.last().unwrap().angle_between(Vec2::Y) + std::f32::consts::PI;
+        } else {
+            angle = 0.0; 
+        }
         // Calculate new polygon vertices and set
         let next_pos = last_pos * scale;
         let colour;
