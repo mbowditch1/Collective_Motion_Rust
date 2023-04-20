@@ -11,12 +11,12 @@ use std::f32::consts::PI;
 pub struct Time {
     times: Vec<f32>,
     pub dt: f32,
-    endtime: f32,
+    pub endtime: f32,
     pub current_index: usize,
 }
 
 impl Time {
-    fn new(dt: f32, endtime: f32) -> Time {
+    pub fn new(dt: f32, endtime: f32) -> Time {
         Time {
             times: vec![0.0],
             dt,
@@ -96,7 +96,7 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new(ctx: &mut Context) -> Model {
+    pub fn new() -> Model {
         // DEFAULTS
         let bound_length = 10.0;
         let num_agents = 100;
@@ -107,11 +107,41 @@ impl Model {
         // Create grid and assign agents
         let mut grid = Grid::new(vision_radius, bound_length);
         for a in 0..num_agents {
-            let agent = Agent::new(ctx, bound_length, AgentType::new_prey());
+            let agent = Agent::new(bound_length, AgentType::new_prey());
             grid.push_agent(agent);
         }
         // REMOVE
-        let predator = Agent::new(ctx, bound_length, AgentType::new_predator());
+        let predator = Agent::new(bound_length, AgentType::new_predator());
+        grid.push_agent(predator);
+        Model {
+            num_agents,
+            grid,
+            times: Time::new(DT, 50.0),
+            bound_length,
+            scale: WINDOW_WIDTH / bound_length,
+            vision_radius,
+            predator_vision_radius,
+            vision_ratio,
+            boundary_condition: BC::Soft(0.3),
+        }
+    }
+
+    pub fn new_graphical(ctx: &mut Context) -> Model {
+        // DEFAULTS
+        let bound_length = 10.0;
+        let num_agents = 100;
+        let vision_radius: f32 = 1.0;
+        let predator_vision_radius: f32 = 3.0;
+        let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
+
+        // Create grid and assign agents
+        let mut grid = Grid::new(vision_radius, bound_length);
+        for a in 0..num_agents {
+            let agent = Agent::new_graphical(ctx, bound_length, AgentType::new_prey());
+            grid.push_agent(agent);
+        }
+        // REMOVE
+        let predator = Agent::new_graphical(ctx, bound_length, AgentType::new_predator());
         grid.push_agent(predator);
         Model {
             num_agents,
@@ -153,10 +183,10 @@ impl Model {
         // Create grid and assign agents
         let mut grid = Grid::new(vision_radius, bound_length);
         for a in 0..num_agents {
-            let agent = Agent::new(ctx, bound_length, AgentType::prey_from_params(PreyParams::from_params(&mut parameters.prey_params)));
+            let agent = Agent::new_graphical(ctx, bound_length, AgentType::prey_from_params(PreyParams::from_params(&mut parameters.prey_params)));
             grid.push_agent(agent);
         }
-        let predator = Agent::new(ctx, bound_length, AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)));
+        let predator = Agent::new_graphical(ctx, bound_length, AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)));
         grid.push_agent(predator);
         Model {
             num_agents,
@@ -171,11 +201,17 @@ impl Model {
         }
     }
 
+    pub fn run(&mut self) {
+        while self.times.times[self.times.current_index] < self.times.endtime {
+            self.step();
+        }
+    }
+
     pub fn step(&mut self) {
-        let mut bound_vel = Vec2::ZERO;
         for c_i in 0..self.grid.num_cells {
             for c_j in 0..self.grid.num_cells {
                 for i in 0..self.grid.cells[c_i][c_j].agents.len() {
+                    let mut bound_vel = Vec2::ZERO;
                     // Soft boundary velocity
                     match self.boundary_condition {
                         BC::Soft(br) => {
@@ -226,6 +262,7 @@ impl Model {
                                         match a_2.agent_type {
                                             AgentType::Prey(..) => { 
                                                 if dist < self.vision_radius {
+                                                    // Remove own velocity
                                                     align_vel += a_2.velocities[self.times.current_index];
                                                     let curr_repulsion = a_2.positions[self.times.current_index]-self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index]; 
                                                     if curr_repulsion != Vec2::ZERO{
@@ -347,12 +384,15 @@ impl Model {
                         BC::Hard => {
                             self.grid.cells[c_i][c_j].agents[i]
                                 .hard_boundary(&self.times, self.bound_length);
-                        }
+                        },
                         BC::Periodic => {
                             self.grid.cells[c_i][c_j].agents[i]
                                 .periodic_boundary(&self.times, self.bound_length);
-                        }
-                        _ => (),
+                        },
+                        BC::Soft(_) => {
+                            self.grid.cells[c_i][c_j].agents[i]
+                                .hard_boundary(&self.times, self.bound_length);
+                        },
                     }
                 }
             }

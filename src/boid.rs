@@ -259,12 +259,48 @@ pub struct Agent {
     pub positions: Vec<Vec2>,
     pub velocities: Vec<Vec2>,
     points: Vec<Vec2>,
-    polygon: graphics::Mesh,
+    polygon: Option<graphics::Mesh>,
     pub agent_type: AgentType,
 }
 
 impl Agent {
-    pub fn new(ctx: &mut Context, b_length: f32, agent_type: AgentType) -> Agent {
+    pub fn new(b_length: f32, agent_type: AgentType) -> Agent {
+        let x: f32 = rand::thread_rng().gen::<f32>() * b_length;
+        let y: f32 = rand::thread_rng().gen::<f32>() * b_length;
+        let mut a_vec = Vec2::new(x, y);
+
+        // Change to include negatives
+        let mut rng = rand::thread_rng();
+        let normal = Normal::new(0.0, 0.1).unwrap();
+        let x = normal.sample(&mut rng);
+        let y = normal.sample(&mut rng);
+        let mut v_vec = Vec2::new(x, y);
+        v_vec = v_vec.normalize();
+
+        let point_1 = Vec2::new(0.0, -BOID_SIZE / 2.0);
+        let point_2 = Vec2::new(BOID_SIZE / 4.0, BOID_SIZE / 2.0);
+        let point_3 = Vec2::new(0.0, BOID_SIZE / 3.0);
+        let point_4 = Vec2::new(-BOID_SIZE / 4.0, BOID_SIZE / 2.0);
+
+        let last_pos = a_vec.clone();
+
+        Agent {
+            positions: {
+                let mut pos_vec: Vec<Vec2> = Vec::new();
+                pos_vec.push(a_vec);
+                pos_vec
+            },
+            velocities: {
+                let mut vel_vec: Vec<Vec2> = Vec::new();
+                vel_vec.push(v_vec);
+                vel_vec
+            },
+            points: vec![point_1, point_2, point_3, point_4],
+            polygon: None,
+            agent_type,
+        }
+    }
+    pub fn new_graphical(ctx: &mut Context, b_length: f32, agent_type: AgentType) -> Agent {
         let x: f32 = rand::thread_rng().gen::<f32>() * b_length;
         let y: f32 = rand::thread_rng().gen::<f32>() * b_length;
         let mut a_vec = Vec2::new(x, y);
@@ -303,13 +339,13 @@ impl Agent {
             },
             points: vec![point_1, point_2, point_3, point_4],
             polygon: {
-                graphics::Mesh::new_polygon(
+                Some(graphics::Mesh::new_polygon(
                     ctx,
                     graphics::DrawMode::fill(),
                     &polygon_matrix,
                     graphics::Color::from(CREAM),
                 )
-                .unwrap()
+                .unwrap())
             },
             agent_type,
         }
@@ -360,8 +396,11 @@ impl Agent {
             .dest(next_pos)
             .rotation(angle)
             .color(graphics::Color::from(colour));
-
-        canvas.draw(&self.polygon, drawparams);
+        
+        match &self.polygon {
+            Some(pol) => canvas.draw(pol, drawparams),
+            _ => ()
+        }
     }
 
     pub fn periodic_boundary(&mut self, times: &Time, boundary_length: f32) {

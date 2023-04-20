@@ -133,7 +133,7 @@ impl MainState {
 
         let s = MainState {
             frames: 0,
-            model: Model::new(ctx),
+            model: Model::new_graphical(ctx),
             play_state: PlayState::play,
             disco_mode: PlayState::paused,
             assets: Assets::new(ctx)?,
