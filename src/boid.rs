@@ -144,7 +144,7 @@ impl PreyParams {
 
 impl PredParams {
     pub fn new() -> PredParams {
-        PredParams { current_direction: (0.0), prey_attraction: (0.0), prey_alignment: (0.0), nearest_prey: (1.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0) }
+        PredParams { current_direction: (0.0), prey_attraction: (1.0), prey_alignment: (0.0), nearest_prey: (1.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0) }
     }
 
     pub fn from_params(gui_params: &mut GUIPredParams) -> PredParams {

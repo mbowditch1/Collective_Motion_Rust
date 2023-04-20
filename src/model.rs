@@ -238,12 +238,6 @@ impl Model {
                                             AgentType::Predator(..) => {
                                                 if dist < self.vision_radius {
                                                     pred_align_vel += a_2.velocities[self.times.current_index];
-                                                    pred_centering += distance(
-                                                        &self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index], 
-                                                        &a_2.positions[self.times.current_index],
-                                                        self.bound_length,
-                                                        &self.boundary_condition,
-                                                    );
                                                     let curr_repulsion = a_2.positions[self.times.current_index]-self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index]; 
                                                     if curr_repulsion != Vec2::ZERO  {
                                                         pred_repulsion += curr_repulsion/curr_repulsion.length_squared(); 
@@ -271,9 +265,7 @@ impl Model {
                             if pred_num_nearby > 0 {
                                 pred_align_vel = -1.0* pred_align_vel / pred_num_nearby as f32;
                                 pred_centering = -1.0*pred_centering / pred_num_nearby as f32;
-                                if num_nearby > 1 {  
-                                    pred_repulsion = -1.0*pred_repulsion/(pred_num_nearby-1) as f32;
-                                }
+                                pred_repulsion = -1.0*pred_repulsion/pred_num_nearby as f32;
                             } 
                             let new_vel = params.prey_alignment*align_vel + params.boundary*bound_vel + params.predator_centering*pred_centering + params.prey_attraction*attraction + params.prey_repulsion*prey_repulsion + params.predator_repulsion*pred_repulsion+ params.predator_alignment*pred_align_vel;
                             new_vel
@@ -311,9 +303,7 @@ impl Model {
                                             AgentType::Prey(..) => { 
                                                 if dist < self.vision_radius {
                                                     let curr_attraction = a_2.positions[self.times.current_index]-self.grid.cells[c_i][c_j].agents[i].positions[self.times.current_index]; 
-                                                    if curr_attraction != Vec2::ZERO { 
-                                                        prey_attraction += curr_attraction/(curr_attraction.length_squared()).powf(1.5); 
-                                                    }
+                                                    prey_attraction += curr_attraction/(curr_attraction.length_squared()).powf(1.5); 
                                                     num_nearby += 1;
                                                 }  
                                             },
@@ -331,17 +321,18 @@ impl Model {
                                     }
                                 }
                             }
-                            if num_nearby > 1 {
+                            if num_nearby > 0 {
                                 prey_attraction = prey_attraction / num_nearby as f32;
                             } 
 
                             if pred_num_nearby > 0 {
                                 pred_alignment = pred_alignment / pred_num_nearby as f32;
                                 if pred_num_nearby > 1 { 
-                                    pred_repulsion = pred_repulsion / pred_num_nearby as f32;
+                                    pred_repulsion = pred_repulsion / (pred_num_nearby-1) as f32;
                                 }
                             } 
-                            params.nearest_prey*chase_vel + params.prey_attraction*prey_attraction + params.predator_repulsion*pred_repulsion + params.predator_alignment*pred_alignment
+                            let new_vel = params.nearest_prey*chase_vel + params.prey_attraction*prey_attraction + params.predator_repulsion*pred_repulsion + params.predator_alignment*pred_alignment+ params.boundary*bound_vel;
+                            new_vel
                         },
                     };
                     new_vel = new_vel.normalize();
