@@ -11,3 +11,5 @@ rand = "0.8.5"
 ggez = "0.8.0"
 rand_distr = "0.4.3"
 ggegui = "0.3.4"
+csv = "1.1"
+serde = { version = "1", features = ["derive"] }

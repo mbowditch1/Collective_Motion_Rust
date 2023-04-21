@@ -127,6 +127,7 @@ struct MainState {
     model: Model,
     play_state: PlayState,
     disco_mode: PlayState,
+    trail: PlayState,
     assets: Assets,
     gui: Gui,
     parameters: GUIParameters,
@@ -144,6 +145,7 @@ impl MainState {
             model: Model::new_graphical(ctx),
             play_state: PlayState::play,
             disco_mode: PlayState::paused,
+            trail: PlayState::paused,
             assets: Assets::new(ctx)?,
             gui: Gui::new(ctx),
             parameters: GUIParameters::new(),
@@ -328,7 +330,21 @@ impl event::EventHandler<ggez::GameError> for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::from(DBLUE));
 
-        self.model.draw(ctx, &mut canvas, &self.disco_mode);
+        match self.play_state {
+            PlayState::paused => {
+                match self.trail {
+                    PlayState::paused => self.model.draw(ctx, &mut canvas, &self.disco_mode),
+                    PlayState::play => self.model.draw_trail(ctx, &mut canvas, &self.disco_mode),
+                }
+            },
+            PlayState::play => { 
+                match self.trail {
+                    PlayState::paused => self.model.draw(ctx, &mut canvas, &self.disco_mode),
+                    PlayState::play => self.model.draw_trail(ctx, &mut canvas, &self.disco_mode),
+                }
+            },
+        }
+
         canvas.draw(&self.gui, graphics::DrawParam::default().dest(Vec2::ZERO));
         canvas.finish(ctx)?;
 
@@ -352,6 +368,10 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 ggez::input::keyboard::KeyCode::Space => {
                     let new_play_state = self.play_state.swap();
                     self.play_state = new_play_state;
+                }
+                ggez::input::keyboard::KeyCode::T => {
+                    let new_play_state = self.trail.swap();
+                    self.trail = new_play_state;
                 }
                 ggez::input::keyboard::KeyCode::B => {
                     let new_bc = self.model.boundary_condition.swap();

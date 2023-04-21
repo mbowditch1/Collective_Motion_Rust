@@ -21,13 +21,13 @@ pub fn clamp(val: f32, min: f32, max: f32) -> Clamped {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AgentType {
     Prey([f32; 4], PreyParams, ),
     Predator([f32; 4], PredParams,),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PredParams {
     pub current_direction: f32,
     pub prey_alignment: f32,
@@ -41,7 +41,7 @@ pub struct PredParams {
     pub boundary: f32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PreyParams {
     pub current_direction: f32,
     pub prey_alignment: f32,
@@ -295,6 +295,13 @@ impl AgentType {
     pub fn pred_from_params(pred_params: PredParams) -> AgentType {
         AgentType::Predator(LRED, pred_params,)
     }
+
+    pub fn change_colour(self, new_colour: [f32;4]) -> Self {
+        match self {
+            AgentType::Prey(_, p) => AgentType::Prey(new_colour, p), 
+            AgentType::Predator(_, p) => AgentType::Predator(new_colour, p), 
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -425,12 +432,15 @@ impl Agent {
         canvas: &mut graphics::Canvas,
         scale: f32,
         disco_mode: &PlayState,
+        offset: usize,
     ) {
-        let last_pos = (*self.positions.last().unwrap()).clone();
+        let index = self.positions.len()-1-offset;
+        let last_pos = (self.positions[index]).clone();
         let angle;
-        if self.velocities.last().unwrap().length() > 0.00001 { 
+        let last_vel = self.velocities[index].clone();
+        if last_vel.length() > 0.00001 { 
             angle =
-                -1.0 * self.velocities.last().unwrap().angle_between(Vec2::Y) + std::f32::consts::PI;
+                -1.0 * last_vel.angle_between(Vec2::Y) + std::f32::consts::PI;
         } else {
             angle = 0.0; 
         }
@@ -455,7 +465,7 @@ impl Agent {
         
         match &self.polygon {
             Some(pol) => canvas.draw(pol, drawparams),
-            _ => println!("HERE"), 
+            _ => (), 
         }
     }
 
