@@ -1,4 +1,4 @@
-use crate::model::Model;
+use crate::model::{Model, Parameters};
 use ggegui::{egui, Gui};
 use ggez::audio;
 use ggez::audio::SoundSource;
@@ -46,6 +46,7 @@ impl PlayState {
 }
 
 pub struct GUIPreyParams {
+    pub vision_radius: String,
     pub current_direction: String,
     pub prey_alignment: String,
     pub prey_attraction: String,
@@ -59,6 +60,7 @@ pub struct GUIPreyParams {
 }
 
 pub struct GUIPredParams {
+    pub vision_radius: String,
     pub current_direction: String,
     pub prey_alignment: String,
     pub prey_attraction: String,
@@ -73,7 +75,8 @@ pub struct GUIPredParams {
 
 pub struct GUIParameters {
     pub bound_length: String,
-    pub vision_radius: String,
+    pub num_prey: String,
+    pub num_pred: String,
     pub prey_params: GUIPreyParams,
     pub pred_params: GUIPredParams,
 }
@@ -81,6 +84,7 @@ pub struct GUIParameters {
 impl GUIPreyParams {
     fn new() -> GUIPreyParams {
         GUIPreyParams {
+            vision_radius: "1".to_owned(),
             current_direction: "0".to_owned(),
             prey_alignment: "1".to_owned(),
             prey_attraction: "0.5".to_owned(),
@@ -98,6 +102,7 @@ impl GUIPreyParams {
 impl GUIPredParams {
     fn new() -> GUIPredParams {
         GUIPredParams {
+            vision_radius: "3".to_owned(),
             current_direction: "0".to_owned(),
             prey_alignment: "0".to_owned(),
             prey_attraction: "1".to_owned(),
@@ -115,7 +120,8 @@ impl GUIParameters {
     fn new() -> GUIParameters {
         GUIParameters {
             bound_length: "10".to_owned(),
-            vision_radius: "1".to_owned(), 
+            num_prey: "100".to_owned(),
+            num_pred: "100".to_owned(),
             prey_params: GUIPreyParams::new(),
             pred_params: GUIPredParams::new(),
         }
@@ -152,6 +158,25 @@ impl MainState {
         };
         Ok(s)
     }
+
+    fn from_params(ctx: &mut ggez::context::Context, params: &Parameters) -> GameResult<MainState> {
+        ctx.gfx.add_font(
+            "LiberationMono",
+            graphics::FontData::from_path(ctx, "/LiberationMono-Regular.ttf")?,
+        );
+
+        let s = MainState {
+            frames: 0,
+            model: Model::graphical_from(ctx, params),
+            play_state: PlayState::play,
+            disco_mode: PlayState::paused,
+            trail: PlayState::paused,
+            assets: Assets::new(ctx)?,
+            gui: Gui::new(ctx),
+            parameters: GUIParameters::new(),
+        };
+        Ok(s)
+    }
 }
 
 // Then we implement the `ggez:event::EventHandler` trait on it, which
@@ -164,19 +189,31 @@ impl event::EventHandler<ggez::GameError> for MainState {
         let gui_ctx = self.gui.ctx();
         egui::Window::new("Parameters").show(&gui_ctx, |ui| {
             ui.horizontal(|ui| {
-                let boundary_length_label = ui.label("Boundary length: ");
+                ui.label("Number of Prey: ");
+                ui.add(
+                    egui::TextEdit::singleline(&mut self.parameters.num_prey),
+                );
+            });
+            ui.horizontal(|ui| {
+                ui.label("Number of Predators: ");
+                ui.add(
+                    egui::TextEdit::singleline(&mut self.parameters.num_pred),
+                );
+            });
+            ui.horizontal(|ui| {
+                ui.label("Boundary length: ");
                 ui.add(
                     egui::TextEdit::singleline(&mut self.parameters.bound_length),
                 );
             });
-            ui.horizontal(|ui| {
-                let vision_radius_label = ui.label("Vision Radius: ");
-                ui.add(
-                    egui::TextEdit::singleline(&mut self.parameters.vision_radius),
-                );
-            });
             ui.vertical(|ui| {
                 ui.label("Prey Parameters");
+                ui.horizontal(|ui| {
+                    ui.label("Vision radius: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.prey_params.vision_radius),
+                    );
+                });
                 ui.horizontal(|ui| {
                     ui.label("Max velocity: ");
                     ui.add(
@@ -240,6 +277,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
             });
             ui.vertical(|ui| {
                 ui.label("Predator Parameters");
+                ui.horizontal(|ui| {
+                    ui.label("Vision radius: ");
+                    ui.add(
+                        egui::TextEdit::singleline(&mut self.parameters.pred_params.vision_radius),
+                    );
+                });
                 ui.horizontal(|ui| {
                     ui.label("Max velocity: ");
                     ui.add(
@@ -428,5 +471,28 @@ pub fn start_game() -> GameResult {
     ctx.gfx.set_window_position(w_pos);
     ctx.gfx.set_drawable_size(WINDOW_WIDTH, WINDOW_HEIGHT)?;
     let state = MainState::new(&mut ctx)?;
+    event::run(ctx, event_loop, state)
+}
+
+pub fn start_game_from_parameters(params: &Parameters) -> GameResult {
+    // We add the CARGO_MANIFEST_DIR/resources to the resource paths
+    // so that ggez will look in our cargo project directory for files.
+    let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+        let mut path = path::PathBuf::from(manifest_dir);
+        path.push("resources");
+        path
+    } else {
+        path::PathBuf::from("./resources")
+    };
+
+    let cb = ggez::ContextBuilder::new("boids", "ggez").add_resource_path(resource_dir);
+    let (mut ctx, event_loop) = cb.build()?;
+
+    let mut w_pos = ctx.gfx.window_position().unwrap();
+    w_pos.x = (1920 - WINDOW_WIDTH as i32) / 2;
+    w_pos.y = (1200 - WINDOW_HEIGHT as i32) / 2;
+    ctx.gfx.set_window_position(w_pos);
+    ctx.gfx.set_drawable_size(WINDOW_WIDTH, WINDOW_HEIGHT)?;
+    let state = MainState::from_params(&mut ctx, params)?;
     event::run(ctx, event_loop, state)
 }

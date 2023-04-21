@@ -8,6 +8,8 @@ use rand::Rng;
 use rand_distr::{Distribution, Normal, NormalError};
 use std::f32::consts::PI;
 
+
+#[derive(Debug, Clone)]
 pub struct Time {
     pub times: Vec<f32>,
     pub dt: f32,
@@ -36,6 +38,13 @@ impl Time {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum IC {
+    Random,
+    School,
+}
+
+#[derive(Debug, Clone)]
 pub enum BC {
     Soft(f32),
     Periodic,
@@ -87,14 +96,25 @@ pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2
     vec
 }
 
+pub struct Parameters {
+    // Model
+    pub num_agents: usize,
+    pub num_pred: usize,
+    pub bound_length: f32,
+    pub boundary_condition: BC,
+    pub times: Time,
+    pub prey_params: PreyParams,
+    pub pred_params: PredParams,
+}
+
 pub struct Model {
     num_agents: usize,
+    num_pred: usize,
     pub times: Time,
     pub agents: Vec<Agent>,
+    pub vision_radius: f32,
     bound_length: f32,
     scale: f32,
-    vision_radius: f32,
-    predator_vision_radius: f32,
     vision_ratio: usize,
     pub boundary_condition: BC,
     pub grid: Grid,
@@ -105,9 +125,7 @@ impl Model {
         // DEFAULTS
         let bound_length = 10.0;
         let num_agents = 100;
-        let vision_radius: f32 = 1.0;
-        let predator_vision_radius: f32 = 3.0;
-        let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
+        let vision_radius = 1.0;
         let mut agents = Vec::new();
 
         // Create agents
@@ -118,26 +136,114 @@ impl Model {
             agents.push(agent);
         }
 
-        let num_predators = 3;
-        for a in 0..num_predators {
+        let num_pred= 0;
+        for a in num_agents..num_agents+num_pred {
             let agent = Agent::new(bound_length, AgentType::new_predator());
             grid.push_agent(&agent.positions[0], a);
             agents.push(agent);
         }
+
+        let mut vision_ratio: usize = 1;
+        if num_pred > 0 {
+            if let AgentType::Predator(_, pred_params) = &agents[num_agents].agent_type {
+                if let AgentType::Prey(_, prey_params) = &agents[0].agent_type {
+                    vision_ratio = (pred_params.vision_radius/prey_params.vision_radius).ceil() as usize;
+                }
+            }
+        } else {
+            vision_ratio = 1;
+        }
+
         // REMOVE
         //let predator = Agent::new(bound_length, AgentType::new_predator());
         //grid.push_agent(predator);
         Model {
             num_agents,
+            num_pred,
             agents,
+            vision_radius,
             grid,
             times: Time::new(DT, 50.0),
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
-            vision_radius,
-            predator_vision_radius,
             vision_ratio,
             boundary_condition: BC::Periodic,
+        }
+    }
+
+    pub fn from(parameters: &Parameters) -> Model {
+        let num_agents = parameters.num_agents;
+        let num_pred = parameters.num_pred;
+        let bound_length = parameters.bound_length; 
+        let vision_radius = parameters.prey_params.vision_radius;
+        let times = parameters.times.clone();
+        let boundary_condition = parameters.boundary_condition.clone();
+        let mut agents = Vec::new();
+
+        // Create agents
+        let mut grid = Grid::new(vision_radius, bound_length);
+        for a in 0..num_agents {
+            let agent = Agent::new(bound_length, AgentType::prey_from_params(parameters.prey_params.clone()));
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
+        }
+
+        for a in num_agents..num_agents+num_pred {
+            let agent = Agent::new(bound_length, AgentType::pred_from_params(parameters.pred_params.clone()));
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
+        }
+
+        let vision_ratio: usize = (parameters.pred_params.vision_radius/parameters.prey_params.vision_radius).ceil() as usize;
+        Model {
+            num_agents,
+            num_pred,
+            agents,
+            vision_radius,
+            grid,
+            times,
+            bound_length,
+            scale: WINDOW_WIDTH / bound_length,
+            vision_ratio,
+            boundary_condition,
+        }
+    }
+
+    pub fn graphical_from(ctx: &mut Context, parameters: &Parameters) -> Model {
+        let num_agents = parameters.num_agents;
+        let num_pred = parameters.num_pred;
+        let bound_length = parameters.bound_length; 
+        let vision_radius = parameters.prey_params.vision_radius;
+        let times = parameters.times.clone();
+        let boundary_condition = parameters.boundary_condition.clone();
+        let mut agents = Vec::new();
+
+        // Create agents
+        let mut grid = Grid::new(vision_radius, bound_length);
+        for a in 0..num_agents {
+            let agent = Agent::new_graphical(ctx, bound_length, AgentType::prey_from_params(parameters.prey_params.clone()));
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
+        }
+
+        for a in num_agents..num_agents+num_pred {
+            let agent = Agent::new_graphical(ctx, bound_length, AgentType::pred_from_params(parameters.pred_params.clone()));
+            grid.push_agent(&agent.positions[0], a);
+            agents.push(agent);
+        }
+
+        let vision_ratio: usize = (parameters.pred_params.vision_radius/parameters.prey_params.vision_radius).ceil() as usize;
+        Model {
+            num_agents,
+            num_pred,
+            agents,
+            vision_radius,
+            grid,
+            times,
+            bound_length,
+            scale: WINDOW_WIDTH / bound_length,
+            vision_ratio,
+            boundary_condition,
         }
     }
 
@@ -146,8 +252,6 @@ impl Model {
         let bound_length = 10.0;
         let num_agents = 100;
         let vision_radius: f32 = 1.0;
-        let predator_vision_radius: f32 = 3.0;
-        let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
         let mut agents = Vec::new();
 
         // Create grid and assign agents
@@ -158,26 +262,34 @@ impl Model {
             agents.push(agent);
         }
 
-        let num_predators = 3;
-        for a in num_agents..num_agents+num_predators {
+        let num_pred= 0;
+        for a in num_agents..num_agents+num_pred{
             let agent = Agent::new_graphical(ctx, bound_length, AgentType::new_predator());
             grid.push_agent(&agent.positions[0], a);
             agents.push(agent);
         }
 
-        // REMOVE
-        //let predator = Agent::new_graphical(ctx, bound_length, AgentType::new_predator());
-        //grid.push_agent(predator);
+        let mut vision_ratio: usize = 1;
+        if num_pred > 0 {
+            if let AgentType::Predator(_, pred_params) = &agents[num_agents].agent_type {
+                if let AgentType::Prey(_, prey_params) = &agents[0].agent_type {
+                    vision_ratio = (pred_params.vision_radius/prey_params.vision_radius).ceil() as usize;
+                }
+            }
+        } else {
+            vision_ratio = 1;
+        }
+
         Model {
             num_agents,
+            num_pred,
             agents,
+            vision_ratio,
             grid,
             times: Time::new(DT, 50.0),
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
             vision_radius,
-            predator_vision_radius,
-            vision_ratio,
             boundary_condition: BC::Periodic,
         }
     }
@@ -186,7 +298,8 @@ impl Model {
         // DEFAULTS
         let bound_length: f32;
         let vision_radius: f32;
-        let predator_vision_radius = 3.0;
+        let num_agents;
+        let num_pred;
         match parameters.bound_length.parse::<f32>() {
             Ok(bl) => bound_length = bl,
             Err(_E) => {
@@ -195,17 +308,30 @@ impl Model {
                 parameters.bound_length = 10.0.to_string();
             },
         }
-        match parameters.vision_radius.parse::<f32>() {
+        match parameters.prey_params.vision_radius.parse::<f32>() {
             Ok(vr) => vision_radius = vr,
             Err(_E) => {
                 println!("Please enter a valid vision radius. Setting to default");
                 vision_radius = 1.0;
-                parameters.vision_radius = 1.to_string();
+                parameters.prey_params.vision_radius = 1.to_string();
             },
         }
-        let num_agents = 100;
-        let num_predators = 3;
-        let vision_ratio = (predator_vision_radius/vision_radius).ceil() as usize;
+        match parameters.num_prey.parse::<usize>() {
+            Ok(vr) => num_agents = vr,
+            Err(_E) => {
+                println!("Please enter a valid vision radius. Setting to default");
+                num_agents = 100;
+                parameters.num_prey = 100.to_string();
+            },
+        }
+        match parameters.num_pred.parse::<usize>() {
+            Ok(vr) => num_pred = vr,
+            Err(_E) => {
+                println!("Please enter a valid vision radius. Setting to default");
+                num_pred = 0;
+                parameters.num_pred = 0.to_string();
+            },
+        }
         let mut agents = Vec::new();
 
         // Create grid and assign agents
@@ -215,21 +341,32 @@ impl Model {
             grid.push_agent(&agent.positions[0], a);
             agents.push(agent);
         }
-        for a in num_agents..num_agents+num_predators {
+        for a in num_agents..num_agents+num_pred{
             let agent = Agent::new_graphical(ctx, bound_length, AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)));
             grid.push_agent(&agent.positions[0], a);
             agents.push(agent);
         }
 
+        let mut vision_ratio: usize = 1;
+        if num_pred > 0 {
+            if let AgentType::Predator(_, pred_params) = &agents[num_agents].agent_type {
+                if let AgentType::Prey(_, prey_params) = &agents[0].agent_type {
+                    vision_ratio = (pred_params.vision_radius/prey_params.vision_radius).ceil() as usize;
+                }
+            }
+        } else {
+            vision_ratio = 1;
+        }
+
         Model {
             num_agents,
+            num_pred,
             agents,
             grid,
             times: Time::new(DT, 50.0),
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
             vision_radius,
-            predator_vision_radius,
             vision_ratio,
             boundary_condition: BC::Periodic,
         }
@@ -297,7 +434,7 @@ impl Model {
                                         if dist > 0.0000001 { 
                                             match &self.agents[a_2_index].agent_type {
                                                 AgentType::Prey(..) => { 
-                                                    if dist < self.vision_radius {
+                                                    if dist < params.vision_radius {
                                                         align_vel += self.agents[a_2_index].velocities[self.times.current_index] - self.agents[a_1_index].velocities[self.times.current_index];
                                                         let curr_repulsion = distance_vec(self.agents[a_1_index].positions.last().unwrap(), self.agents[a_2_index].positions.last().unwrap(), self.bound_length, &self.boundary_condition); 
                                                         prey_repulsion += curr_repulsion/curr_repulsion.length_squared(); 
@@ -306,7 +443,7 @@ impl Model {
                                                     }  
                                                 },
                                                 AgentType::Predator(..) => {
-                                                    if dist < self.vision_radius {
+                                                    if dist < params.vision_radius {  
                                                         pred_align_vel += self.agents[a_2_index].velocities[self.times.current_index] - self.agents[a_1_index].velocities[self.times.current_index];
                                                         let curr_repulsion = distance_vec(self.agents[a_1_index].positions.last().unwrap(), self.agents[a_2_index].positions.last().unwrap(), self.bound_length, &self.boundary_condition);
                                                         pred_repulsion += curr_repulsion/curr_repulsion.length_squared(); 
@@ -379,14 +516,14 @@ impl Model {
                                         if dist > 0.0000001 { 
                                             match &self.agents[a_2_index].agent_type {
                                                 AgentType::Prey(..) => { 
-                                                    if dist < self.vision_radius {
+                                                    if dist < params.vision_radius {  
                                                         let curr_attraction = distance_vec(self.agents[a_1_index].positions.last().unwrap(),self.agents[a_2_index].positions.last().unwrap(),self.bound_length,&self.boundary_condition);
                                                         prey_attraction += curr_attraction/(curr_attraction.length_squared()).powf(1.5); 
                                                         num_nearby += 1;
                                                     }  
                                                 },
                                                 AgentType::Predator(..) => {
-                                                    if dist < self.vision_radius {
+                                                    if dist < params.vision_radius {  
                                                         pred_alignment += self.agents[a_2_index].velocities[self.times.current_index] - self.agents[a_1_index].velocities[self.times.current_index];
                                                         let curr_repulsion = distance_vec(self.agents[a_1_index].positions.last().unwrap(),self.agents[a_2_index].positions.last().unwrap(),self.bound_length,&self.boundary_condition);
                                                         pred_repulsion += curr_repulsion/curr_repulsion.length_squared(); 

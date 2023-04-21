@@ -29,6 +29,7 @@ pub enum AgentType {
 
 #[derive(Debug, Clone)]
 pub struct PredParams {
+    pub vision_radius: f32,
     pub current_direction: f32,
     pub prey_alignment: f32,
     pub prey_attraction: f32,
@@ -43,6 +44,7 @@ pub struct PredParams {
 
 #[derive(Debug, Clone)]
 pub struct PreyParams {
+    pub vision_radius: f32,
     pub current_direction: f32,
     pub prey_alignment: f32,
     pub prey_attraction: f32,
@@ -57,10 +59,11 @@ pub struct PreyParams {
 
 impl PreyParams {
     pub fn new() -> PreyParams {
-        PreyParams { current_direction: (0.0), prey_attraction: (0.5), prey_alignment: (1.0), prey_repulsion: (0.25), predator_alignment: (0.0), predator_centering: (0.0), predator_repulsion: (10.0), boundary: (20.0), max_acceleration: 1.0, max_vel: 1.0 }
+        PreyParams { current_direction: (0.0), prey_attraction: (0.5), prey_alignment: (1.0), prey_repulsion: (0.25), predator_alignment: (0.0), predator_centering: (0.0), predator_repulsion: (10.0), boundary: (20.0), max_acceleration: 1.0, max_vel: 1.0, vision_radius: 1.0}
     }
 
     pub fn from_params(gui_params: &mut GUIPreyParams) -> PreyParams {
+        let vision_radius;
         let current_direction;
         let prey_attraction;
         let prey_alignment;
@@ -71,6 +74,14 @@ impl PreyParams {
         let max_acceleration;
         let max_vel;
         let boundary;
+        match gui_params.vision_radius.parse::<f32>() {
+            Ok(v) =>  vision_radius = v,
+            Err(_E) => {
+                println!("Please enter a valid vision_radius. Setting to default");
+                vision_radius = 1.0;
+                gui_params.vision_radius = 1.0.to_string();
+            },
+        };
         match gui_params.max_vel.parse::<f32>() {
             Ok(v) =>  max_vel = v,
             Err(_E) => {
@@ -152,6 +163,7 @@ impl PreyParams {
             },
         };
         PreyParams {
+            vision_radius,
             current_direction,
             prey_attraction,
             prey_alignment,
@@ -168,9 +180,10 @@ impl PreyParams {
 
 impl PredParams {
     pub fn new() -> PredParams {
-        PredParams { current_direction: (0.0), prey_attraction: (1.0), prey_alignment: (0.0), nearest_prey: (0.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0), max_acceleration: 1.0, max_vel:  1.0 } }
+        PredParams { current_direction: (0.0), prey_attraction: (1.0), prey_alignment: (0.0), nearest_prey: (0.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0), max_acceleration: 1.0, max_vel:  1.0, vision_radius: 1.0, } }
 
     pub fn from_params(gui_params: &mut GUIPredParams) -> PredParams {
+        let vision_radius;
         let current_direction;
         let prey_alignment;
         let prey_attraction;
@@ -181,6 +194,14 @@ impl PredParams {
         let max_acceleration;
         let max_vel;
         let boundary;
+        match gui_params.vision_radius.parse::<f32>() {
+            Ok(v) =>  vision_radius = v,
+            Err(_E) => {
+                println!("Please enter a valid vision_radius. Setting to default");
+                vision_radius = 3.0;
+                gui_params.vision_radius = 3.0.to_string();
+            },
+        };
         match gui_params.max_vel.parse::<f32>() {
             Ok(v) =>  max_vel = v,
             Err(_E) => {
@@ -262,6 +283,7 @@ impl PredParams {
             },
         };
         PredParams {
+            vision_radius,
             current_direction,
             prey_alignment,
             prey_attraction,
