@@ -1,1 +1,1 @@
-# boids WIP
+# Collective Motion WIP
