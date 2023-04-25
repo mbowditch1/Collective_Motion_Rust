@@ -1,4 +1,6 @@
-use crate::graphics::{PlayState, BOID_SIZE, LRED, CREAM, WINDOW_HEIGHT, WINDOW_WIDTH, GUIPreyParams, GUIPredParams};
+use crate::graphics::{
+    GUIPredParams, GUIPreyParams, PlayState, BOID_SIZE, CREAM, LRED, WINDOW_HEIGHT, WINDOW_WIDTH,
+};
 use crate::model::Time;
 use ggez::glam::{Mat2, Vec2};
 use ggez::{graphics, Context};
@@ -23,8 +25,8 @@ pub fn clamp(val: f32, min: f32, max: f32) -> Clamped {
 
 #[derive(Debug, Clone)]
 pub enum AgentType {
-    Prey([f32; 4], PreyParams, ),
-    Predator([f32; 4], PredParams,),
+    Prey([f32; 4], PreyParams),
+    Predator([f32; 4], PredParams),
 }
 
 #[derive(Debug, Clone)]
@@ -59,7 +61,19 @@ pub struct PreyParams {
 
 impl PreyParams {
     pub fn new() -> PreyParams {
-        PreyParams { current_direction: (0.0), prey_attraction: (0.5), prey_alignment: (1.0), prey_repulsion: (0.25), predator_alignment: (0.0), predator_centering: (0.0), predator_repulsion: (10.0), boundary: (20.0), max_acceleration: 1.0, max_vel: 1.0, vision_radius: 1.0}
+        PreyParams {
+            current_direction: (0.0),
+            prey_attraction: (0.5),
+            prey_alignment: (1.0),
+            prey_repulsion: (0.25),
+            predator_alignment: (0.0),
+            predator_centering: (0.0),
+            predator_repulsion: (10.0),
+            boundary: (20.0),
+            max_acceleration: 1.0,
+            max_vel: 1.0,
+            vision_radius: 1.0,
+        }
     }
 
     pub fn from_params(gui_params: &mut GUIPreyParams) -> PreyParams {
@@ -75,92 +89,92 @@ impl PreyParams {
         let max_vel;
         let boundary;
         match gui_params.vision_radius.parse::<f32>() {
-            Ok(v) =>  vision_radius = v,
+            Ok(v) => vision_radius = v,
             Err(_E) => {
                 println!("Please enter a valid vision_radius. Setting to default");
                 vision_radius = 1.0;
                 gui_params.vision_radius = 1.0.to_string();
-            },
+            }
         };
         match gui_params.max_vel.parse::<f32>() {
-            Ok(v) =>  max_vel = v,
+            Ok(v) => max_vel = v,
             Err(_E) => {
                 println!("Please enter a valid max_vel. Setting to default");
                 max_vel = 1.0;
                 gui_params.max_vel = 1.0.to_string();
-            },
+            }
         };
         match gui_params.max_acceleration.parse::<f32>() {
-            Ok(v) =>  max_acceleration = v,
+            Ok(v) => max_acceleration = v,
             Err(_E) => {
                 println!("Please enter a valid max_acceleration. Setting to default");
                 max_acceleration = 1.0;
                 gui_params.max_acceleration = 1.0.to_string();
-            },
+            }
         };
         match gui_params.current_direction.parse::<f32>() {
-            Ok(v) =>  current_direction = v,
+            Ok(v) => current_direction = v,
             Err(_E) => {
                 println!("Please enter a valid current_direction. Setting to default");
                 current_direction = 0.0;
                 gui_params.current_direction = 0.0.to_string();
-            },
+            }
         };
         match gui_params.prey_alignment.parse::<f32>() {
-            Ok(v) =>  prey_alignment = v,
+            Ok(v) => prey_alignment = v,
             Err(_E) => {
                 println!("Please enter a valid prey_alignment. Setting to default");
                 prey_alignment = 1.0;
                 gui_params.prey_alignment = 1.0.to_string();
-            },
+            }
         };
         match gui_params.prey_attraction.parse::<f32>() {
-            Ok(v) =>  prey_attraction = v,
+            Ok(v) => prey_attraction = v,
             Err(_E) => {
                 println!("Please enter a valid prey_centering. Setting to default");
                 prey_attraction = 0.5;
                 gui_params.prey_attraction = 0.5.to_string();
-            },
+            }
         };
         match gui_params.prey_repulsion.parse::<f32>() {
-            Ok(v) =>  prey_repulsion = v,
+            Ok(v) => prey_repulsion = v,
             Err(_E) => {
                 println!("Please enter a valid prey_repulsion. Setting to default");
                 prey_repulsion = 0.25;
                 gui_params.prey_repulsion = 0.25.to_string();
-            },
+            }
         };
         match gui_params.predator_alignment.parse::<f32>() {
-            Ok(v) =>  predator_alignment = v,
+            Ok(v) => predator_alignment = v,
             Err(_E) => {
                 println!("Please enter a valid predator_alignment. Setting to default");
                 predator_alignment = 0.0;
                 gui_params.predator_alignment = 0.0.to_string();
-            },
+            }
         };
         match gui_params.predator_centering.parse::<f32>() {
-            Ok(v) =>  predator_centering = v,
+            Ok(v) => predator_centering = v,
             Err(_E) => {
                 println!("Please enter a valid predator_centering. Setting to default");
                 predator_centering = 10.0;
                 gui_params.predator_centering = 10.0.to_string();
-            },
+            }
         };
         match gui_params.predator_repulsion.parse::<f32>() {
-            Ok(v) =>  predator_repulsion = v,
+            Ok(v) => predator_repulsion = v,
             Err(_E) => {
                 println!("Please enter a valid predator_repulsion. Setting to default");
                 predator_repulsion = 10.0;
                 gui_params.predator_repulsion = 10.0.to_string();
-            },
+            }
         };
         match gui_params.boundary.parse::<f32>() {
-            Ok(v) =>  boundary = v,
+            Ok(v) => boundary = v,
             Err(_E) => {
                 println!("Please enter a valid boundary. Setting to default");
                 boundary = 20.0;
                 gui_params.boundary = 20.0.to_string();
-            },
+            }
         };
         PreyParams {
             vision_radius,
@@ -180,7 +194,20 @@ impl PreyParams {
 
 impl PredParams {
     pub fn new() -> PredParams {
-        PredParams { current_direction: (0.0), prey_attraction: (1.0), prey_alignment: (0.0), nearest_prey: (0.0), predator_alignment: (0.0), predator_attraction: (0.0), predator_repulsion: (0.0), boundary: (10.0), max_acceleration: 1.0, max_vel:  1.0, vision_radius: 1.0, } }
+        PredParams {
+            current_direction: (0.0),
+            prey_attraction: (1.0),
+            prey_alignment: (0.0),
+            nearest_prey: (0.0),
+            predator_alignment: (0.0),
+            predator_attraction: (0.0),
+            predator_repulsion: (0.0),
+            boundary: (10.0),
+            max_acceleration: 1.0,
+            max_vel: 1.0,
+            vision_radius: 1.0,
+        }
+    }
 
     pub fn from_params(gui_params: &mut GUIPredParams) -> PredParams {
         let vision_radius;
@@ -195,92 +222,92 @@ impl PredParams {
         let max_vel;
         let boundary;
         match gui_params.vision_radius.parse::<f32>() {
-            Ok(v) =>  vision_radius = v,
+            Ok(v) => vision_radius = v,
             Err(_E) => {
                 println!("Please enter a valid vision_radius. Setting to default");
                 vision_radius = 3.0;
                 gui_params.vision_radius = 3.0.to_string();
-            },
+            }
         };
         match gui_params.max_vel.parse::<f32>() {
-            Ok(v) =>  max_vel = v,
+            Ok(v) => max_vel = v,
             Err(_E) => {
                 println!("Please enter a valid max_vel. Setting to default");
                 max_vel = 0.0;
                 gui_params.max_vel = 0.0.to_string();
-            },
+            }
         };
         match gui_params.max_acceleration.parse::<f32>() {
-            Ok(v) =>  max_acceleration = v,
+            Ok(v) => max_acceleration = v,
             Err(_E) => {
                 println!("Please enter a valid max_acceleration. Setting to default");
                 max_acceleration = 0.0;
                 gui_params.max_acceleration = 0.0.to_string();
-            },
+            }
         };
         match gui_params.current_direction.parse::<f32>() {
-            Ok(v) =>  current_direction = v,
+            Ok(v) => current_direction = v,
             Err(_E) => {
                 println!("Please enter a valid current_direction. Setting to default");
                 current_direction = 0.0;
                 gui_params.current_direction = 0.0.to_string();
-            },
+            }
         };
         match gui_params.prey_alignment.parse::<f32>() {
-            Ok(v) =>  prey_alignment = v,
+            Ok(v) => prey_alignment = v,
             Err(_E) => {
                 println!("Please enter a valid prey_alignment. Setting to default");
                 prey_alignment = 0.0;
                 gui_params.prey_alignment = 0.0.to_string();
-            },
+            }
         };
         match gui_params.prey_attraction.parse::<f32>() {
-            Ok(v) =>  prey_attraction = v,
+            Ok(v) => prey_attraction = v,
             Err(_E) => {
                 println!("Please enter a valid prey_attraction. Setting to default");
                 prey_attraction = 0.0;
                 gui_params.prey_attraction = 0.0.to_string();
-            },
+            }
         };
         match gui_params.nearest_prey.parse::<f32>() {
-            Ok(v) =>  nearest_prey = v,
+            Ok(v) => nearest_prey = v,
             Err(_E) => {
                 println!("Please enter a valid nearest_prey. Setting to default");
                 nearest_prey = 1.0;
                 gui_params.nearest_prey = 1.0.to_string();
-            },
+            }
         };
         match gui_params.predator_alignment.parse::<f32>() {
-            Ok(v) =>  predator_alignment = v,
+            Ok(v) => predator_alignment = v,
             Err(_E) => {
                 println!("Please enter a valid predator_alignment. Setting to default");
                 predator_alignment = 0.0;
                 gui_params.predator_alignment = 0.0.to_string();
-            },
+            }
         };
         match gui_params.predator_centering.parse::<f32>() {
-            Ok(v) =>  predator_centering = v,
+            Ok(v) => predator_centering = v,
             Err(_E) => {
                 println!("Please enter a valid predator_centering. Setting to default");
                 predator_centering = 0.0;
                 gui_params.predator_centering = 0.0.to_string();
-            },
+            }
         };
         match gui_params.predator_repulsion.parse::<f32>() {
-            Ok(v) =>  predator_repulsion = v,
+            Ok(v) => predator_repulsion = v,
             Err(_E) => {
                 println!("Please enter a valid predator_repulsion. Setting to default");
                 predator_repulsion = 0.0;
                 gui_params.predator_repulsion = 0.0.to_string();
-            },
+            }
         };
         match gui_params.boundary.parse::<f32>() {
-            Ok(v) =>  boundary = v,
+            Ok(v) => boundary = v,
             Err(_E) => {
                 println!("Please enter a valid boundary. Setting to default");
                 boundary = 10.0;
                 gui_params.boundary = 10.0.to_string();
-            },
+            }
         };
         PredParams {
             vision_radius,
@@ -300,28 +327,28 @@ impl PredParams {
 
 impl AgentType {
     //  currrent direction, alignment, centering, predator repulsion (positions), predator
-    //   alignment, boundaries 
+    //   alignment, boundaries
     pub fn new_prey() -> AgentType {
-        AgentType::Prey(CREAM, PreyParams::new(),)
+        AgentType::Prey(CREAM, PreyParams::new())
     }
 
     //  currrent direction, prey alignment, prey centering, nearest prey, predator alignment (positions), predator centering, boundaries
     pub fn new_predator() -> AgentType {
-        AgentType::Predator(LRED, PredParams::new(),)
+        AgentType::Predator(CREAM, PredParams::new())
     }
 
     pub fn prey_from_params(prey_params: PreyParams) -> AgentType {
-        AgentType::Prey(CREAM, prey_params,)
+        AgentType::Prey(CREAM, prey_params)
     }
 
     pub fn pred_from_params(pred_params: PredParams) -> AgentType {
-        AgentType::Predator(LRED, pred_params,)
+        AgentType::Predator(CREAM, pred_params)
     }
 
-    pub fn change_colour(self, new_colour: [f32;4]) -> Self {
+    pub fn change_colour(self, new_colour: [f32; 4]) -> Self {
         match self {
-            AgentType::Prey(_, p) => AgentType::Prey(new_colour, p), 
-            AgentType::Predator(_, p) => AgentType::Predator(new_colour, p), 
+            AgentType::Prey(_, p) => AgentType::Prey(new_colour, p),
+            AgentType::Predator(_, p) => AgentType::Predator(new_colour, p),
         }
     }
 }
@@ -349,10 +376,16 @@ impl Agent {
         let mut v_vec = Vec2::new(x, y);
         v_vec = v_vec.normalize();
 
-        let point_1 = Vec2::new(0.0, -BOID_SIZE / 2.0);
-        let point_2 = Vec2::new(BOID_SIZE / 4.0, BOID_SIZE / 2.0);
-        let point_3 = Vec2::new(0.0, BOID_SIZE / 3.0);
-        let point_4 = Vec2::new(-BOID_SIZE / 4.0, BOID_SIZE / 2.0);
+        let multiplier;
+        match agent_type {
+            AgentType::Prey(..) => multiplier = 1.0,
+            AgentType::Predator(..) => multiplier = 1.5,
+        }
+
+        let point_1 = Vec2::new(0.0, -(BOID_SIZE*multiplier) / 2.0);
+        let point_2 = Vec2::new((BOID_SIZE*multiplier) / 4.0, (BOID_SIZE*multiplier) / 2.0);
+        let point_3 = Vec2::new(0.0, (BOID_SIZE*multiplier) / 3.0);
+        let point_4 = Vec2::new(-(BOID_SIZE*multiplier) / 4.0, (BOID_SIZE*multiplier) / 2.0);
 
         let last_pos = a_vec.clone();
 
@@ -385,10 +418,15 @@ impl Agent {
         let mut v_vec = Vec2::new(x, y);
         v_vec = v_vec.normalize();
 
-        let point_1 = Vec2::new(0.0, -BOID_SIZE / 2.0);
-        let point_2 = Vec2::new(BOID_SIZE / 4.0, BOID_SIZE / 2.0);
-        let point_3 = Vec2::new(0.0, BOID_SIZE / 3.0);
-        let point_4 = Vec2::new(-BOID_SIZE / 4.0, BOID_SIZE / 2.0);
+        let multiplier;
+        match agent_type {
+            AgentType::Prey(..) => multiplier = 1.0,
+            AgentType::Predator(..) => multiplier = 1.5,
+        }
+        let point_1 = Vec2::new(0.0, -(BOID_SIZE)*multiplier / 2.0);
+        let point_2 = Vec2::new((BOID_SIZE)*multiplier / 4.0, (BOID_SIZE)*multiplier / 2.0);
+        let point_3 = Vec2::new(0.0, (BOID_SIZE)*multiplier / 3.0);
+        let point_4 = Vec2::new(-(BOID_SIZE)*multiplier / 4.0, (BOID_SIZE)*multiplier / 2.0);
 
         let last_pos = a_vec.clone();
         let polygon_matrix = [
@@ -411,13 +449,15 @@ impl Agent {
             },
             points: vec![point_1, point_2, point_3, point_4],
             polygon: {
-                Some(graphics::Mesh::new_polygon(
-                    ctx,
-                    graphics::DrawMode::fill(),
-                    &polygon_matrix,
-                    graphics::Color::from(CREAM),
+                Some(
+                    graphics::Mesh::new_polygon(
+                        ctx,
+                        graphics::DrawMode::fill(),
+                        &polygon_matrix,
+                        graphics::Color::from(CREAM),
+                    )
+                    .unwrap(),
                 )
-                .unwrap())
             },
             agent_type,
         }
@@ -430,11 +470,11 @@ impl Agent {
 
     fn update_vel(&mut self, dt: f32, acceleration: Vec2, max_vel: f32) {
         let last_vel = self.velocities.last().unwrap();
-        let mut new_vel =last_vel.clone() + dt*acceleration;
+        let mut new_vel = last_vel.clone() + dt * acceleration;
         let new_vel_length = new_vel.length();
         if new_vel_length > 0.000001 {
             new_vel = new_vel.normalize();
-            new_vel = new_vel*(new_vel_length.min(max_vel));
+            new_vel = new_vel * (new_vel_length.min(max_vel));
         } else {
             new_vel = Vec2::ZERO;
         }
@@ -456,19 +496,19 @@ impl Agent {
         disco_mode: &PlayState,
         offset: usize,
     ) {
-        let index = self.positions.len()-1-offset;
+        let index = self.positions.len() - 1 - offset;
         let last_pos = (self.positions[index]).clone();
         let angle;
         let last_vel = self.velocities[index].clone();
-        if last_vel.length() > 0.00001 { 
-            angle =
-                -1.0 * last_vel.angle_between(Vec2::Y) + std::f32::consts::PI;
+        let last_vel_length = last_vel.length(); 
+        if last_vel_length > 0.00001 {
+            angle = -1.0 * last_vel.angle_between(Vec2::Y) + std::f32::consts::PI;
         } else {
-            angle = 0.0; 
+            angle = 0.0;
         }
         // Calculate new polygon vertices and set
         let next_pos = last_pos * scale;
-        let colour;
+        let mut colour;
         match disco_mode {
             PlayState::play => {
                 colour = [
@@ -478,16 +518,26 @@ impl Agent {
                     1.0,
                 ]
             }
-            PlayState::paused => match self.agent_type { AgentType::Prey(val, _) => colour=val, AgentType::Predator(val, _) => colour=val},
+            PlayState::paused => match self.agent_type {
+                AgentType::Prey(val, _) => colour = val,
+                AgentType::Predator(val, _) => colour = val,
+            },
+        }
+
+        match &self.agent_type {
+            AgentType::Prey(_, params) => {
+                colour = [last_vel_length/params.max_vel, 0.0, 1.0-(last_vel_length/params.max_vel), 1.0];
+            },
+            _ => (),
         }
         let drawparams = graphics::DrawParam::new()
             .dest(next_pos)
             .rotation(angle)
             .color(graphics::Color::from(colour));
-        
+
         match &self.polygon {
             Some(pol) => canvas.draw(pol, drawparams),
-            _ => (), 
+            _ => (),
         }
     }
 

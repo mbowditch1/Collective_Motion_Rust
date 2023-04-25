@@ -1,8 +1,8 @@
-use std::error::Error;
-use crate::model::Model;
+use crate::boid::{Agent, AgentType, PreyParams};
 use crate::graphics::CREAM;
-use crate::boid::{AgentType, Agent, PreyParams};
+use crate::model::Model;
 use ggez::glam::Vec2;
+use std::error::Error;
 
 pub fn write_to_file(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn Error>> {
     let mut writer = csv::Writer::from_path(path)?;
@@ -44,4 +44,3 @@ pub fn order_plot(model: &Model) {
         eprintln!("{}", e);
     }
 }
-

@@ -16,7 +16,8 @@ pub const DT: f32 = 1.0 / FPS_TARGET;
 pub const DRED: [f32; 4] = [120.0 / 255.0, 0.0, 0.0, 1.0];
 pub const LRED: [f32; 4] = [193.0 / 255.0, 18.0 / 255.0, 31.0 / 255.0, 1.0];
 pub const CREAM: [f32; 4] = [253.0 / 255.0, 240.0 / 255.0, 213.0 / 255.0, 1.0];
-pub const DBLUE: [f32; 4] = [0.0, 48.0 / 255.0, 73.0 / 255.0, 1.0];
+//pub const DBLUE: [f32; 4] = [0.0, 48.0 / 255.0, 73.0 / 255.0, 1.0];
+pub const DBLUE: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 pub const LBLUE: [f32; 4] = [102.0, 155.0 / 255.0, 188.0 / 255.0, 1.0];
 
 struct Assets {
@@ -190,158 +191,154 @@ impl event::EventHandler<ggez::GameError> for MainState {
         egui::Window::new("Parameters").show(&gui_ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label("Number of Prey: ");
-                ui.add(
-                    egui::TextEdit::singleline(&mut self.parameters.num_prey),
-                );
+                ui.add(egui::TextEdit::singleline(&mut self.parameters.num_prey));
             });
             ui.horizontal(|ui| {
                 ui.label("Number of Predators: ");
-                ui.add(
-                    egui::TextEdit::singleline(&mut self.parameters.num_pred),
-                );
+                ui.add(egui::TextEdit::singleline(&mut self.parameters.num_pred));
             });
             ui.horizontal(|ui| {
                 ui.label("Boundary length: ");
-                ui.add(
-                    egui::TextEdit::singleline(&mut self.parameters.bound_length),
-                );
+                ui.add(egui::TextEdit::singleline(
+                    &mut self.parameters.bound_length,
+                ));
             });
             ui.vertical(|ui| {
                 ui.label("Prey Parameters");
                 ui.horizontal(|ui| {
                     ui.label("Vision radius: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.vision_radius),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.vision_radius,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Max velocity: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.max_vel),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.max_vel,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Current velocity: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.current_direction),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.current_direction,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Prey Alignment: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_alignment),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.prey_alignment,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Prey Attraction: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_attraction),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.prey_attraction,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Prey Repulsion: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.prey_repulsion),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.prey_repulsion,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Predator Alignment: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.predator_alignment),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.predator_alignment,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Predator Attraction: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.predator_centering),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.predator_centering,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Predator Repulsion: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.predator_repulsion),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.predator_repulsion,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Max Acceleration: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.max_acceleration),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.max_acceleration,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Boundary: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.prey_params.boundary),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.prey_params.boundary,
+                    ));
                 });
             });
             ui.vertical(|ui| {
                 ui.label("Predator Parameters");
                 ui.horizontal(|ui| {
                     ui.label("Vision radius: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.vision_radius),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.vision_radius,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Max velocity: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.max_vel),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.max_vel,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Current velocity: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.current_direction),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.current_direction,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Prey Alignment: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.prey_alignment),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.prey_alignment,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Prey Attraction: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.prey_attraction),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.prey_attraction,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Nearest Prey: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.nearest_prey),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.nearest_prey,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Predator Alignment: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.predator_alignment),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.predator_alignment,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Predator Attraction");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.predator_centering),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.predator_centering,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Predator Repulsion");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.predator_repulsion),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.predator_repulsion,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Max Acceleration: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.max_acceleration),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.max_acceleration,
+                    ));
                 });
                 ui.horizontal(|ui| {
                     ui.label("Boundary: ");
-                    ui.add(
-                        egui::TextEdit::singleline(&mut self.parameters.pred_params.boundary),
-                    );
+                    ui.add(egui::TextEdit::singleline(
+                        &mut self.parameters.pred_params.boundary,
+                    ));
                 });
             });
             if ui.button("Set Parameters").clicked() {
@@ -374,17 +371,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::from(DBLUE));
 
         match self.play_state {
-            PlayState::paused => {
-                match self.trail {
-                    PlayState::paused => self.model.draw(ctx, &mut canvas, &self.disco_mode),
-                    PlayState::play => self.model.draw_trail(ctx, &mut canvas, &self.disco_mode),
-                }
+            PlayState::paused => match self.trail {
+                PlayState::paused => self.model.draw(ctx, &mut canvas, &self.disco_mode),
+                PlayState::play => self.model.draw_trail(ctx, &mut canvas, &self.disco_mode),
             },
-            PlayState::play => { 
-                match self.trail {
-                    PlayState::paused => self.model.draw(ctx, &mut canvas, &self.disco_mode),
-                    PlayState::play => self.model.draw_trail(ctx, &mut canvas, &self.disco_mode),
-                }
+            PlayState::play => match self.trail {
+                PlayState::paused => self.model.draw(ctx, &mut canvas, &self.disco_mode),
+                PlayState::play => self.model.draw_trail(ctx, &mut canvas, &self.disco_mode),
             },
         }
 
@@ -437,7 +430,11 @@ impl event::EventHandler<ggez::GameError> for MainState {
         Ok(())
     }
 
-    fn text_input_event(&mut self, _ctx: &mut Context, character: char) -> Result<(), ggez::GameError> {
+    fn text_input_event(
+        &mut self,
+        _ctx: &mut Context,
+        character: char,
+    ) -> Result<(), ggez::GameError> {
         self.gui.input.text_input_event(character);
         Ok(())
     }

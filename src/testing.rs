@@ -1,9 +1,9 @@
-use std::error::Error;
-use crate::model::Model;
+use crate::boid::{Agent, AgentType, PreyParams};
 use crate::graphics::CREAM;
-use crate::boid::{AgentType, Agent, PreyParams};
-use ggez::glam::Vec2;
+use crate::model::Model;
 use crate::plot::*;
+use ggez::glam::Vec2;
+use std::error::Error;
 
 pub fn test_order() -> f32 {
     let mut agent_1 = Agent::new(10.0, crate::boid::AgentType::Prey(CREAM, PreyParams::new()));
@@ -28,7 +28,7 @@ pub fn test_csv() {
     let mut values: Vec<&Vec<f32>> = Vec::new();
     values.push(&col_1);
     values.push(&col_2);
-    if let Err(e) = write_to_file("./csv/test.csv", &values){
-        eprintln!("{}",e);
+    if let Err(e) = write_to_file("./csv/test.csv", &values) {
+        eprintln!("{}", e);
     }
 }
