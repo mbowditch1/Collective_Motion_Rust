@@ -11,8 +11,8 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    test_model();
-    //test_plots();
+    //test_model();
+    test_plots();
     //graphics::start_game();
 }
 
@@ -48,7 +48,7 @@ fn test_model() {
         num_prey: 500,
         num_pred: 3,
         bound_length: 20.0,
-        boundary_condition: BC::Soft(2.0), // only current BC
+        boundary_condition: BC::Soft(1.5), // only current BC
         times: Time::new(1.0 / 60.0, 50.0),
         prey_params,
         pred_params,
