@@ -15,9 +15,10 @@ pub const DT: f32 = 1.0 / FPS_TARGET;
 // Colour scheme
 pub const DRED: [f32; 4] = [120.0 / 255.0, 0.0, 0.0, 1.0];
 pub const LRED: [f32; 4] = [193.0 / 255.0, 18.0 / 255.0, 31.0 / 255.0, 1.0];
-pub const CREAM: [f32; 4] = [253.0 / 255.0, 240.0 / 255.0, 213.0 / 255.0, 1.0];
+//pub const CREAM: [f32; 4] = [253.0 / 255.0, 240.0 / 255.0, 213.0 / 255.0, 1.0];
+pub const CREAM: [f32; 4] = [1.0, 1.0,1.0,1.0];
 //pub const DBLUE: [f32; 4] = [0.0, 48.0 / 255.0, 73.0 / 255.0, 1.0];
-pub const DBLUE: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+pub const DBLUE: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 pub const LBLUE: [f32; 4] = [102.0, 155.0 / 255.0, 188.0 / 255.0, 1.0];
 
 struct Assets {

@@ -495,6 +495,7 @@ impl Agent {
         scale: f32,
         disco_mode: &PlayState,
         offset: usize,
+        transparency: f32, 
     ) {
         let index = self.positions.len() - 1 - offset;
         let last_pos = (self.positions[index]).clone();
@@ -508,7 +509,8 @@ impl Agent {
         }
         // Calculate new polygon vertices and set
         let next_pos = last_pos * scale;
-        let mut colour;
+
+        let mut colour = [0.0, 0.0, 0.0, 1.0];
         match disco_mode {
             PlayState::play => {
                 colour = [
@@ -528,13 +530,18 @@ impl Agent {
             AgentType::Prey(_, params) => {
                 colour = [last_vel_length/params.max_vel, 0.0, 1.0-(last_vel_length/params.max_vel), 1.0];
             },
-            _ => (),
+            AgentType::Predator(..) => colour = [0.0, 0.0, 0.0, 1.0],
         }
+
+        colour[3] = transparency;
+
+        let test_pos = Vec2::new(next_pos.x, next_pos.y); 
         let drawparams = graphics::DrawParam::new()
-            .dest(next_pos)
+            .dest(test_pos)
             .rotation(angle)
             .color(graphics::Color::from(colour));
 
+        
         match &self.polygon {
             Some(pol) => canvas.draw(pol, drawparams),
             _ => (),
