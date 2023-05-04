@@ -69,26 +69,25 @@ pub fn plot_avg_velocity(model: &Model) {
     }
 }
 
-// pub fn number_groups(agents: &Vec<Agent>, time_step: usize) {
-//     let model = Model::new(1.0,5);
-//     let mut inputs: Vec<Vec2> = Vec::new();
-//     for a in agents.iter() {
-//         inputs.push(&a.positions[time_step]);
-//     }
-//     let output = model.run(&inputs);
-//     assert_eq!(
-//         output,
-//         vec![Edge(0),
-//         Core(0),
-//         Core(0),
-//         Core(0),
-//         Core(1),
-//         Core(1),
-//         Core(1),
-//         Noise
-//         ]
-//     )
-// }
+pub fn number_groups(agents: &Vec<Agent>, time_step: usize) -> u32 {
+    let model = dbscan::Model::new(1.0,5);
+    let mut inputs: Vec<Vec<f32>> = Vec::new();
+    for a in agents.iter() {
+        inputs.push(a.positions[time_step].to_array().to_vec());
+    }
+    model.run(&inputs);
+    let clusters = dbscan::cluster(0.5, 5, &inputs);
+    // println!("{:?}",clusters);
+    let mut count: usize = 0;
+    for i in 0..clusters.len() {
+        if let dbscan::Classification::Core(number) = clusters[i] {
+            if count <= number {
+                count = number + 1;
+            }
+        }
+    }
+    count as u32
+}
 
 pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std::error::Error>> {
     let mut plot_data: Vec<(f64, f64)> = Vec::new();
@@ -134,8 +133,8 @@ pub fn output_positions(path: String, model: &Model) {
     let num_steps = model.times.times.len();
     let mut values = vec![model.times.times.clone()];
     for a in model.agents.iter() {
-        let mut x_positions: Vec<f32> = Vec::new();  
-        let mut y_positions: Vec<f32> = Vec::new();  
+        let mut x_positions: Vec<f32> = Vec::new();
+        let mut y_positions: Vec<f32> = Vec::new();
         for i in 0..num_steps {
             x_positions.push(a.positions[i].x);
             y_positions.push(a.positions[i].y);

@@ -14,8 +14,8 @@ fn main() {
     //test_model();
     // test_plots();
     //graphics::start_game();
-    test_avg_vel();
-    // test_dbscan();
+    // test_avg_vel();
+    test_num_groups();
 }
 
 fn test_model() {
@@ -154,6 +154,17 @@ fn test_avg_vel() {
     model.times = times;
     model.run();
     plot_avg_velocity(&model);
+}
+
+fn test_num_groups() {
+    let mut model = Model::new();
+    let mut times = Time::new(1.0 / 60.0, 50.0);
+    model.times = times;
+    model.run();
+    for i in 0..model.times.times.len()-1 {
+        let num = number_groups(&model.agents, i);
+        println!("{num}")
+    }
 }
 
 fn run_test() {
