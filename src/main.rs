@@ -11,10 +11,10 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    //test_model();
+    test_model();
     // test_plots();
     //graphics::start_game();
-    test_avg_vel();
+    //test_avg_vel();
     // test_dbscan();
 }
 
@@ -47,19 +47,19 @@ fn test_model() {
     };
     let params = Parameters {
         // Model
-        num_prey: 750,
-        num_pred: 10,
+        num_prey: 500,
+        num_pred: 3,
         bound_length: 10.0,
         boundary_condition: BC::Soft(1.5), // only current BC
         times: Time::new(1.0 / 60.0, 50.0),
         prey_params,
         pred_params,
     };
-    let mut model = Model::from(&params);
-    model.run();
-    let path = String::from("./csv/positions_10_pred.csv");
-    output_positions(path, &model);
-    //graphics::start_game_from_parameters(&params);
+    //let mut model = Model::from(&params);
+    //model.run();
+    //let path = String::from("./csv/positions_10_pred.csv");
+    //output_positions(path, &model);
+    graphics::start_game_from_parameters(&params);
 }
 
 fn diagram_generator() {
