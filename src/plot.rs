@@ -70,7 +70,7 @@ pub fn plot_avg_velocity(model: &Model) {
 }
 
 pub fn number_groups(agents: &Vec<Agent>, time_step: usize) -> u32 {
-    let model = dbscan::Model::new(1.0,5);
+    let model = dbscan::Model::new(0.5,5);
     let mut inputs: Vec<Vec<f32>> = Vec::new();
     for a in agents.iter() {
         inputs.push(a.positions[time_step].to_array().to_vec());
