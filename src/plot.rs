@@ -7,7 +7,7 @@ use std::error::Error;
 use dbscan::Classification::*;
 use dbscan;
 
-pub fn write_to_file(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn Error>> {
+pub fn write_to_file(path: String, values: Vec<Vec<f32>>) -> Result<(), Box<dyn Error>> {
     let mut writer = csv::Writer::from_path(path)?;
     let n = values[0].len();
     for i in 0..n {
@@ -36,7 +36,7 @@ pub fn order(agents: &Vec<Agent>, time_step: usize) -> f32 {
     order.length() / N
 }
 
-pub fn order_plot(model: &Model) {
+pub fn order_plot(path: String, model: &Model) {
     let num_steps = model.times.times.len();
     let mut order_vec: Vec<f32> = Vec::new();
     for i in 0..num_steps {
@@ -128,4 +128,22 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
     root.present()?;
 
     Ok(())
+}
+
+pub fn output_positions(path: String, model: &Model) {
+    let num_steps = model.times.times.len();
+    let mut values = vec![model.times.times.clone()];
+    for a in model.agents.iter() {
+        let mut x_positions: Vec<f32> = Vec::new();  
+        let mut y_positions: Vec<f32> = Vec::new();  
+        for i in 0..num_steps {
+            x_positions.push(a.positions[i].x);
+            y_positions.push(a.positions[i].y);
+        }
+        values.push(x_positions);
+        values.push(y_positions);
+    }
+    if let Err(e) = write_to_file(path, values) {
+        eprintln!("{}", e);
+    }
 }

@@ -517,6 +517,7 @@ impl Model {
                                                             self.bound_length,
                                                             &self.boundary_condition,
                                                         );
+                                                        pred_centering += curr_repulsion;
                                                         pred_repulsion += curr_repulsion
                                                             / curr_repulsion.length_squared();
                                                         pred_num_nearby += 1;
@@ -536,11 +537,11 @@ impl Model {
 
                             if pred_num_nearby > 0 {
                                 pred_align_vel = pred_align_vel / pred_num_nearby as f32;
-                                //pred_centering = pred_centering / pred_num_nearby as f32;
+                                pred_centering = -1.0 *pred_centering / pred_num_nearby as f32;
                                 pred_repulsion = pred_repulsion / pred_num_nearby as f32;
                             }
                             let mut pre_perp_vel = pred_align_vel.perp();
-                            if self.agents[a_1_index].velocities.last().unwrap().dot(pre_perp_vel) <= 0.0 {
+                            if pred_centering.dot(pre_perp_vel) <= 0.0 {
                                 pre_perp_vel = -1.0*pre_perp_vel;
 
                             }
@@ -746,7 +747,7 @@ impl Model {
             self.agents[a_index].agent_type = (self.agents[a_index].agent_type)
                 .clone()
                 .change_colour(new_colour);
-            self.agents[a_index].draw(ctx, canvas, self.scale, &disco_mode, 0);
+            self.agents[a_index].draw(ctx, canvas, self.scale, &disco_mode, 0, 1.0);
         }
     }
 
@@ -760,9 +761,15 @@ impl Model {
             self.draw(ctx, canvas, disco_mode);
             return;
         }
+        //let transparent = [
+        //    1.0, 0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11,
+        //];
         let transparent = [
-            1.0, 0.1, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03, 0.02, 0.01,
+            1.0, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.10, 0.05,
         ];
+       //let transparent = [
+        //    1.0, 0.5, 0.45, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        //];
         for a_index in 0..self.agents.len() {
             for i in 0 as usize..10 as usize {
                 let offset = i * 40;
@@ -776,7 +783,7 @@ impl Model {
                 self.agents[a_index].agent_type = (self.agents[a_index].agent_type)
                     .clone()
                     .change_colour(new_colour);
-                self.agents[a_index].draw(ctx, canvas, self.scale, &disco_mode, offset);
+                self.agents[a_index].draw(ctx, canvas, self.scale, &disco_mode, offset, transparent[i]);
             }
         }
     }
