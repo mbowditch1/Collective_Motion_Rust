@@ -11,10 +11,11 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    test_model();
-    //diagram_generator();
-    //test_plots();
+    //test_model();
+    // test_plots();
     //graphics::start_game();
+    test_avg_vel();
+    // test_dbscan();
 }
 
 fn test_model() {
@@ -145,6 +146,14 @@ fn test_plots() {
         path = path + &p.to_string() + ".csv";
         order_plot(path, &model);
     }
+}
+
+fn test_avg_vel() {
+    let mut model = Model::new();
+    let mut times = Time::new(1.0 / 60.0, 50.0);
+    model.times = times;
+    model.run();
+    plot_avg_velocity(&model);
 }
 
 fn run_test() {
