@@ -540,8 +540,7 @@ impl Agent {
         }
 
         colour[3] = transparency;
-
-        let test_pos = Vec2::new(next_pos.x, next_pos.y);
+        let test_pos = Vec2::new(next_pos.x, next_pos.y-(BOID_SIZE/3.0)); 
         let drawparams = graphics::DrawParam::new()
             .dest(test_pos)
             .rotation(angle)
