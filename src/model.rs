@@ -167,7 +167,7 @@ impl Model {
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
             vision_ratio,
-            boundary_condition: BC::Periodic,
+            boundary_condition: BC::Soft(0.5),
         }
     }
 
@@ -726,6 +726,61 @@ impl Model {
                         &self.agents[agent_index].positions[self.times.current_index],
                         agent_index,
                     );
+                }
+            }
+        }
+        for c_i in 0..self.grid.num_cells {
+            for c_j in 0..self.grid.num_cells {
+                'outer: for a_i in 0..self.grid.cells[c_i][c_j].agent_indices.len() {
+                    let a_index = self.grid.cells[c_i][c_j].agent_indices[a_i];
+                    let a_1 = &self.agents[a_index];
+                    match &a_1.agent_type {
+                        AgentType::Predator(_, params) => {
+                            for n in 0..self.vision_ratio + 2 {
+                                for m in 0..self.vision_ratio + 2 {
+                                    let index_i =
+                                        (c_i as i32 + n as i32 + self.grid.num_cells as i32
+                                            - self.vision_ratio as i32)
+                                            % self.grid.num_cells as i32;
+                                    let index_j =
+                                        (c_j as i32 + m as i32 + self.grid.num_cells as i32
+                                            - self.vision_ratio as i32)
+                                            % self.grid.num_cells as i32;
+                                    for a_2_i in 0..self.grid.cells[index_i as usize]
+                                        [index_j as usize]
+                                        .agent_indices
+                                        .len()
+                                    {
+                                        let a_2_index = self.grid.cells[index_i as usize]
+                                            [index_j as usize]
+                                            .agent_indices[a_2_i];
+                                        match &self.agents[a_2_index].agent_type {
+                                            AgentType::Prey(_, _) => {
+                                                let dist: f32 = distance(
+                                                    &self.agents[a_index].positions
+                                                        [self.times.current_index],
+                                                    &self.agents[a_2_index].positions
+                                                        [self.times.current_index],
+                                                    self.bound_length,
+                                                    &self.boundary_condition,
+                                                );
+                                                if dist < 0.1 {
+                                                    self.grid.cells[index_i as usize][index_j as usize]
+                                                        .agent_indices
+                                                        .remove(a_2_i);
+                                                    self.agents[a_2_index].dead = true;
+                                                    break 'outer
+                                                }
+                                            },
+                                            _ => (),
+                                        }
+
+                                    }
+                                }
+                            }
+                        },
+                        _ => (),
+                    }
                 }
             }
         }

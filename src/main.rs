@@ -6,16 +6,19 @@ use boids::testing::*;
 use ggez::glam::Vec2;
 use std::time::Instant;
 
+// TODO
+// FIX VISION RATIO
+
 fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
     (120.71 / (1000.0 * 60.0 * 50.0)) * (1.0 / dt) * endtime * num_iterations
 }
 
 fn main() {
-    //test_model();
+    test_model();
     // test_plots();
-    //graphics::start_game();
-    // test_avg_vel();
-    println!("{:?}",test_num_groups());
+    // graphics::start_game();
+    //test_avg_vel();
+    // test_num_groups();
 }
 
 fn test_model() {
@@ -24,7 +27,7 @@ fn test_model() {
         current_direction: 0.0, // not in use
         prey_alignment: 1.0,
         prey_attraction: 0.30,
-        prey_repulsion: 0.1,
+        prey_repulsion: 1.0,
         predator_alignment: 5.0,
         predator_centering: 0.0,
         predator_repulsion: 5.0,
@@ -47,19 +50,21 @@ fn test_model() {
     };
     let params = Parameters {
         // Model
-        num_prey: 750,
-        num_pred: 10,
+        num_prey: 500,
+        num_pred: 5,
         bound_length: 10.0,
         boundary_condition: BC::Soft(1.5), // only current BC
         times: Time::new(1.0 / 60.0, 50.0),
         prey_params,
         pred_params,
     };
-    let mut model = Model::from(&params);
-    model.run();
-    let path = String::from("./csv/positions_10_pred.csv");
-    output_positions(path, &model);
-    //graphics::start_game_from_parameters(&params);
+    // let mut model = Model::from(&params);
+    //let mut model = Model::new();
+    // model.run();
+    // let path = String::from("./csv/positions_10_pred.csv");
+    // output_positions(path, &model);
+    //graphics::start_game();
+    graphics::start_game_from_parameters(&params);
 }
 
 fn diagram_generator() {
@@ -150,22 +155,23 @@ fn test_plots() {
 
 fn test_avg_vel() {
     let mut model = Model::new();
-    let mut times = Time::new(1.0 / 60.0, 50.0);
+    let mut times = Time::new(1.0 / 60.0, 2000.0);
     model.times = times;
     model.run();
     plot_avg_velocity(&model);
 }
 
-fn test_num_groups() -> Vec<u32> {
+fn test_num_groups() {
     let mut model = Model::new();
-    let mut times = Time::new(1.0 / 60.0, 50.0);
+    let mut times = Time::new(1.0 / 60.0, 500.0);
     model.times = times;
     model.run();
-    let mut num_groups: Vec<u32> = Vec::new();
-    for i in 0..model.times.times.len()-1 {
-        num_groups.push(number_groups(&model.agents, i));
-    }
-    num_groups
+    plot_number_groups(&model);
+    // let mut num_groups: Vec<u32> = Vec::new();
+    // for i in 0..model.times.times.len()-1 {
+    //     num_groups.push(number_groups(&model.agents, i));
+    // }
+    // num_groups
 }
 
 fn run_test() {
