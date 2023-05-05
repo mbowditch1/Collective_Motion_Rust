@@ -360,6 +360,7 @@ pub struct Agent {
     points: Vec<Vec2>,
     polygon: Option<graphics::Mesh>,
     pub agent_type: AgentType,
+    pub dead: bool,
 }
 
 impl Agent {
@@ -403,6 +404,7 @@ impl Agent {
             points: vec![point_1, point_2, point_3, point_4],
             polygon: None,
             agent_type,
+            dead: false,
         }
     }
     pub fn new_graphical(ctx: &mut Context, b_length: f32, agent_type: AgentType) -> Agent {
@@ -460,6 +462,7 @@ impl Agent {
                 )
             },
             agent_type,
+            dead: false,
         }
     }
 
@@ -495,13 +498,16 @@ impl Agent {
         scale: f32,
         disco_mode: &PlayState,
         offset: usize,
-        transparency: f32, 
+        transparency: f32,
     ) {
+        if self.dead {
+            return
+        }
         let index = self.positions.len() - 1 - offset;
         let last_pos = (self.positions[index]).clone();
         let angle;
         let last_vel = self.velocities[index].clone();
-        let last_vel_length = last_vel.length(); 
+        let last_vel_length = last_vel.length();
         if last_vel_length > 0.00001 {
             angle = -1.0 * last_vel.angle_between(Vec2::Y) + std::f32::consts::PI;
         } else {
@@ -540,7 +546,7 @@ impl Agent {
             .rotation(angle)
             .color(graphics::Color::from(colour));
 
-        
+
         match &self.polygon {
             Some(pol) => canvas.draw(pol, drawparams),
             _ => (),

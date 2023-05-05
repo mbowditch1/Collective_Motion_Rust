@@ -69,26 +69,37 @@ pub fn plot_avg_velocity(model: &Model) {
     }
 }
 
-// pub fn number_groups(agents: &Vec<Agent>, time_step: usize) {
-//     let model = Model::new(1.0,5);
-//     let mut inputs: Vec<Vec2> = Vec::new();
-//     for a in agents.iter() {
-//         inputs.push(&a.positions[time_step]);
-//     }
-//     let output = model.run(&inputs);
-//     assert_eq!(
-//         output,
-//         vec![Edge(0),
-//         Core(0),
-//         Core(0),
-//         Core(0),
-//         Core(1),
-//         Core(1),
-//         Core(1),
-//         Noise
-//         ]
-//     )
-// }
+pub fn number_groups(agents: &Vec<Agent>, time_step: usize) -> f32 {
+    let model = dbscan::Model::new(0.5,5);
+    let mut inputs: Vec<Vec<f32>> = Vec::new();
+    for a in agents.iter() {
+        inputs.push(a.positions[time_step].to_array().to_vec());
+    }
+    model.run(&inputs);
+    let clusters = dbscan::cluster(1.0, 5, &inputs);
+    // println!("{:?}",clusters);
+    let mut count: usize = 0;
+    for i in 0..clusters.len() {
+        if let dbscan::Classification::Core(number) = clusters[i] {
+            if number >= count {
+                count = number + 1;
+            }
+        }
+    }
+    count as f32
+}
+
+pub fn plot_number_groups(model: &Model) {
+    let num_steps = model.times.times.len();
+    let mut num_groups: Vec<f32> = Vec::new();
+    for i in 0..num_steps {
+        num_groups.push(number_groups(&model.agents, i));
+    }
+    let values = vec![&model.times.times, &num_groups];
+    if let Err(e) = plot_test("plotters-doc-data/0.png", &values) {
+        eprintln!("{}", e);
+    }
+}
 
 pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std::error::Error>> {
     let mut plot_data: Vec<(f64, f64)> = Vec::new();
@@ -108,7 +119,7 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         .x_label_area_size(30)
         .y_label_area_size(30)
         // .build_cartesian_2d(min_x..*max_x, min_y..*max_y)?;
-        .build_cartesian_2d(0.0..50.0, 0.0..2.0)?;
+        .build_cartesian_2d(0.0..2000.0, 0.0..2.0)?;
 
     chart.configure_mesh().draw()?;
 
@@ -134,8 +145,8 @@ pub fn output_positions(path: String, model: &Model) {
     let num_steps = model.times.times.len();
     let mut values = vec![model.times.times.clone()];
     for a in model.agents.iter() {
-        let mut x_positions: Vec<f32> = Vec::new();  
-        let mut y_positions: Vec<f32> = Vec::new();  
+        let mut x_positions: Vec<f32> = Vec::new();
+        let mut y_positions: Vec<f32> = Vec::new();
         for i in 0..num_steps {
             x_positions.push(a.positions[i].x);
             y_positions.push(a.positions[i].y);
