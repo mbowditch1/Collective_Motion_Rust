@@ -203,8 +203,8 @@ impl PredParams {
             predator_attraction: (0.0),
             predator_repulsion: (0.0),
             boundary: (10.0),
-            max_acceleration: 1.0,
-            max_vel: 1.0,
+            max_acceleration: 0.8,
+            max_vel: 0.8,
             vision_radius: 1.0,
         }
     }

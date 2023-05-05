@@ -172,7 +172,7 @@ fn test_num_groups() {
 
 fn test_prey_alive() {
     let mut model = Model::new();
-    let mut times = Time::new(1.0 / 60.0, 10000.0);
+    let mut times = Time::new(1.0 / 60.0, 1000.0);
     model.times = times;
     model.run();
     plot_prey_alive(&model);
