@@ -360,7 +360,13 @@ pub struct Agent {
     points: Vec<Vec2>,
     polygon: Option<graphics::Mesh>,
     pub agent_type: AgentType,
-    pub dead: bool,
+    pub dead: State,
+}
+
+#[derive(Debug)]
+pub enum State{
+    Alive,
+    Dead(usize),
 }
 
 impl Agent {
@@ -404,7 +410,7 @@ impl Agent {
             points: vec![point_1, point_2, point_3, point_4],
             polygon: None,
             agent_type,
-            dead: false,
+            dead: State::Alive,
         }
     }
     pub fn new_graphical(ctx: &mut Context, b_length: f32, agent_type: AgentType) -> Agent {
@@ -462,7 +468,7 @@ impl Agent {
                 )
             },
             agent_type,
-            dead: false,
+            dead: State::Alive,
         }
     }
 
@@ -500,8 +506,12 @@ impl Agent {
         offset: usize,
         transparency: f32,
     ) {
-        if self.dead {
-            return
+        // if self.dead {
+        //     return
+        // }
+        match self.dead {
+            State::Dead(_) => return,
+            _ => (),
         }
         let index = self.positions.len() - 1 - offset;
         let last_pos = (self.positions[index]).clone();
@@ -540,7 +550,7 @@ impl Agent {
         }
 
         colour[3] = transparency;
-        let test_pos = Vec2::new(next_pos.x, next_pos.y-(BOID_SIZE/3.0)); 
+        let test_pos = Vec2::new(next_pos.x, next_pos.y-(BOID_SIZE/3.0));
         let drawparams = graphics::DrawParam::new()
             .dest(test_pos)
             .rotation(angle)

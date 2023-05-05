@@ -1,5 +1,5 @@
 use plotters::prelude::*;
-use crate::boid::{Agent, AgentType, PreyParams};
+use crate::boid::{Agent, AgentType, PreyParams,State};
 use crate::graphics::CREAM;
 use crate::model::Model;
 use ggez::glam::Vec2;
@@ -101,6 +101,28 @@ pub fn plot_number_groups(model: &Model) {
     }
 }
 
+pub fn plot_prey_alive(model: &Model) {
+    let num_steps = model.times.times.len();
+    let mut death_index: Vec<usize> = Vec::new();
+    for i in 0..model.num_prey {
+        match model.agents[i].dead {
+            State::Alive => (),
+            State::Dead(index) => {
+                death_index.push(index);
+            },
+        }
+    }
+    death_index.sort();
+    let mut prey_remaining: Vec<f32> = Vec::new();
+    for i in 0..death_index.len() {
+        prey_remaining.append(&mut vec![(model.num_prey-i) as f32; death_index[i]]);
+    }
+    let values = vec![&model.times.times, &prey_remaining];
+    if let Err(e) = plot_test("plotters-doc-data/0.png", &values) {
+        eprintln!("{}", e);
+    }
+}
+
 pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std::error::Error>> {
     let mut plot_data: Vec<(f64, f64)> = Vec::new();
     let n = values[0].len();
@@ -119,7 +141,7 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         .x_label_area_size(30)
         .y_label_area_size(30)
         // .build_cartesian_2d(min_x..*max_x, min_y..*max_y)?;
-        .build_cartesian_2d(0.0..2000.0, 0.0..2.0)?;
+        .build_cartesian_2d(0.0..10000.0, 0.0..200.0)?;
 
     chart.configure_mesh().draw()?;
 

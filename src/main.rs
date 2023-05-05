@@ -14,11 +14,12 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    test_model();
+    // test_model();
     // test_plots();
     // graphics::start_game();
-    //test_avg_vel();
+    // test_avg_vel();
     // test_num_groups();
+    test_prey_alive();
 }
 
 fn test_model() {
@@ -155,7 +156,7 @@ fn test_plots() {
 
 fn test_avg_vel() {
     let mut model = Model::new();
-    let mut times = Time::new(1.0 / 60.0, 2000.0);
+    let mut times = Time::new(1.0 / 60.0, 50.0);
     model.times = times;
     model.run();
     plot_avg_velocity(&model);
@@ -163,15 +164,18 @@ fn test_avg_vel() {
 
 fn test_num_groups() {
     let mut model = Model::new();
-    let mut times = Time::new(1.0 / 60.0, 500.0);
+    let mut times = Time::new(1.0 / 60.0, 50.0);
     model.times = times;
     model.run();
     plot_number_groups(&model);
-    // let mut num_groups: Vec<u32> = Vec::new();
-    // for i in 0..model.times.times.len()-1 {
-    //     num_groups.push(number_groups(&model.agents, i));
-    // }
-    // num_groups
+}
+
+fn test_prey_alive() {
+    let mut model = Model::new();
+    let mut times = Time::new(1.0 / 60.0, 10000.0);
+    model.times = times;
+    model.run();
+    plot_prey_alive(&model);
 }
 
 fn run_test() {

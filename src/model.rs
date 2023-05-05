@@ -1,4 +1,4 @@
-use crate::boid::{Agent, AgentType, PredParams, PreyParams};
+use crate::boid::{Agent, AgentType, PredParams, PreyParams, State};
 use crate::graphics::{GUIParameters, CREAM, LRED};
 use crate::graphics::{PlayState, BOID_SIZE, DT, WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::grid::Grid;
@@ -107,7 +107,7 @@ pub struct Parameters {
 }
 
 pub struct Model {
-    num_prey: usize,
+    pub num_prey: usize,
     num_pred: usize,
     pub times: Time,
     pub agents: Vec<Agent>,
@@ -123,7 +123,7 @@ impl Model {
     pub fn new() -> Model {
         // DEFAULTS
         let bound_length = 10.0;
-        let num_prey = 100;
+        let num_prey = 200;
         let vision_radius = 1.0;
         let mut agents = Vec::new();
 
@@ -135,7 +135,7 @@ impl Model {
             agents.push(agent);
         }
 
-        let num_pred = 0;
+        let num_pred = 10;
         for a in num_prey..num_prey + num_pred {
             let agent = Agent::new(bound_length, AgentType::new_predator());
             grid.push_agent(&agent.positions[0], a);
@@ -768,7 +768,7 @@ impl Model {
                                                     self.grid.cells[index_i as usize][index_j as usize]
                                                         .agent_indices
                                                         .remove(a_2_i);
-                                                    self.agents[a_2_index].dead = true;
+                                                    self.agents[a_2_index].dead = State::Dead(self.times.current_index);
                                                     break 'outer
                                                 }
                                             },
