@@ -80,17 +80,32 @@ pub fn distance(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32, bc: &BC) -> f32 {
     distance_vec(vec_1, vec_2, bound_length, bc).length()
 }
 
+//pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2 {
+//    let mut vec = Vec2::ZERO;
+//    if pos.x < boundary_range {
+//        vec.x = ((pos.x * PI) / (2.0 * boundary_range)).cos();
+//    } else if pos.x > bound_length - boundary_range {
+//        vec.x = -1.0 * ((((bound_length - pos.x) * PI) / (2.0 * boundary_range)).cos());
+//    }
+//    if pos.y < boundary_range {
+//        vec.y = ((pos.y * PI) / (2.0 * boundary_range)).cos();
+//    } else if pos.y > bound_length - boundary_range {
+//        vec.y = -1.0 * ((((bound_length - pos.y) * PI) / (2.0 * boundary_range)).cos());
+//    }
+//    vec
+//}
+
 pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2 {
     let mut vec = Vec2::ZERO;
     if pos.x < boundary_range {
-        vec.x = ((pos.x * PI) / (2.0 * bound_length)).cos();
+        vec.x = (1.0+((pos.x*PI)/boundary_range).cos())/2.0;
     } else if pos.x > bound_length - boundary_range {
-        vec.x = -1.0 * ((((bound_length - pos.x) * PI) / (2.0 * boundary_range)).cos());
+        vec.x = -1.0*((1.0+((PI/boundary_range)*(bound_length-pos.x)).cos())/2.0);
     }
     if pos.y < boundary_range {
-        vec.y = ((pos.y * PI) / (2.0 * bound_length)).cos();
+        vec.y = (1.0+((pos.y*PI)/boundary_range).cos())/2.0;
     } else if pos.y > bound_length - boundary_range {
-        vec.y = -1.0 * ((((bound_length - pos.y) * PI) / (2.0 * boundary_range)).cos());
+        vec.y = -1.0*((1.0+((PI/boundary_range)*(bound_length-pos.y)).cos())/2.0);
     }
     vec
 }

@@ -14,13 +14,13 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    // test_model();
+    test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
-    test_abc(300, 0.1, 400.0);
+    // test_abc(300, 0.1, 400.0);
 }
 
 fn test_model() {
@@ -28,8 +28,8 @@ fn test_model() {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
         prey_alignment: 1.0,
-        prey_attraction: 0.30,
-        prey_repulsion: 1.0,
+        prey_attraction: 0.50,
+        prey_repulsion: 0.25,
         predator_alignment: 5.0,
         predator_centering: 0.0,
         predator_repulsion: 5.0,
@@ -52,10 +52,10 @@ fn test_model() {
     };
     let params = Parameters {
         // Model
-        num_prey: 500,
+        num_prey: 1000,
         num_pred: 5,
         bound_length: 10.0,
-        boundary_condition: BC::Soft(1.5), // only current BC
+        boundary_condition: BC::Soft(2.5), // only current BCmain
         times: Time::new(1.0 / 60.0, 50.0),
         prey_params,
         pred_params,
