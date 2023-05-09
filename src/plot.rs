@@ -1,11 +1,13 @@
 use plotters::prelude::*;
-use crate::boid::{Agent, AgentType, PreyParams};
+use crate::boid::{Agent, AgentType, PreyParams,State, PredParams};
 use crate::graphics::CREAM;
-use crate::model::Model;
+use crate::model::{Model, Parameters,BC,Time};
 use ggez::glam::Vec2;
 use std::error::Error;
 use dbscan::Classification::*;
 use dbscan;
+use rand::Rng;
+
 
 pub fn write_to_file(path: String, values: Vec<Vec<f32>>) -> Result<(), Box<dyn Error>> {
     let mut writer = csv::Writer::from_path(path)?;
@@ -101,6 +103,43 @@ pub fn plot_number_groups(model: &Model) {
     }
 }
 
+pub fn final_prop_dead(model: &Model) -> f32 {
+    let mut count: u32 = 0;
+    for i in 0..model.num_prey {
+        match model.agents[i].dead {
+            State::Alive => (),
+            State::Dead(index) => {
+                count += 1;
+            },
+        }
+    }
+    (count as f32)/(model.num_prey as f32)
+}
+
+pub fn plot_prey_alive(model: &Model) {
+    let num_steps = model.times.times.len();
+    let mut death_index: Vec<usize> = Vec::new();
+    for i in 0..model.num_prey {
+        match model.agents[i].dead {
+            State::Alive => (),
+            State::Dead(index) => {
+                death_index.push(index);
+            },
+        }
+    }
+    death_index.sort();
+    let mut prey_remaining: Vec<f32> = Vec::new();
+    for i in 0..death_index.len() {
+        prey_remaining.append(&mut vec![(model.num_prey-i) as f32; death_index[i] - prey_remaining.len()]);
+    }
+    prey_remaining.append(&mut vec![(model.num_prey - death_index.len()) as f32; num_steps - prey_remaining.len()] );
+    let values = vec![&model.times.times, &prey_remaining];
+    if let Err(e) = plot_test("plotters-doc-data/0.png", &values) {
+        eprintln!("{}", e);
+    }
+    println!("{}", death_index.len());
+}
+
 pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std::error::Error>> {
     let mut plot_data: Vec<(f64, f64)> = Vec::new();
     let n = values[0].len();
@@ -119,7 +158,7 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         .x_label_area_size(30)
         .y_label_area_size(30)
         // .build_cartesian_2d(min_x..*max_x, min_y..*max_y)?;
-        .build_cartesian_2d(0.0..2000.0, 0.0..2.0)?;
+        .build_cartesian_2d(0.0..10000.0, 0.0..200.0)?;
 
     chart.configure_mesh().draw()?;
 
@@ -157,4 +196,46 @@ pub fn output_positions(path: String, model: &Model) {
     if let Err(e) = write_to_file(path, values) {
         eprintln!("{}", e);
     }
+}
+
+pub fn random_params_prey(prey_max: f32, pred_max: f32, max_time: f32) -> Parameters {
+    let mut rng = rand::thread_rng();
+
+    let prey_params = PreyParams {
+        vision_radius: 1.0,
+        current_direction: 0.0, // not in use
+        prey_alignment: rng.gen_range(0.0..prey_max),
+        prey_attraction: rng.gen_range(0.0..prey_max),
+        prey_repulsion: rng.gen_range(0.0..prey_max),
+        predator_alignment: rng.gen_range(0.0..pred_max),
+        predator_centering: rng.gen_range(0.0..pred_max),
+        predator_repulsion: rng.gen_range(0.0..pred_max),
+        max_acceleration: 1.0,
+        max_vel: 1.0,
+        boundary: 20.0, // not in use
+    };
+    let pred_params = PredParams {
+        vision_radius: 3.0,
+        current_direction: 0.0, // not in use
+        prey_alignment: 0.0,
+        prey_attraction: 5.0,
+        nearest_prey: 0.0, // not in use
+        predator_alignment: 1.0,
+        predator_attraction: 2.0,
+        predator_repulsion: 2.0,
+        max_acceleration: 1.0,
+        max_vel: 0.75,
+        boundary: 20.0, //not in use
+    };
+    let params = Parameters {
+        // Model
+        num_prey: 200,
+        num_pred: 5,
+        bound_length: 20.0,
+        boundary_condition: BC::Soft(0.5), // only current BC
+        times: Time::new(1.0 / 60.0, max_time),
+        prey_params,
+        pred_params,
+    };
+    params
 }
