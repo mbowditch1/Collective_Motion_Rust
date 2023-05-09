@@ -2,6 +2,7 @@ use boids::boid::{PredParams, PreyParams};
 use boids::graphics;
 use boids::model::{Model, Parameters, Time, BC};
 use boids::plot::*;
+use boids::parameter_search::*;
 use boids::testing::*;
 use ggez::glam::Vec2;
 use std::time::Instant;
@@ -14,7 +15,8 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    test_model();
+    optimise_deaths();   
+    //test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
@@ -28,35 +30,35 @@ fn test_model() {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
         prey_alignment: 1.0,
-        prey_attraction: 0.50,
-        prey_repulsion: 0.25,
-        predator_alignment: 5.0,
+        prey_attraction: 1.0,
+        prey_repulsion: 0.4,
+        predator_alignment: 1.0,
         predator_centering: 0.0,
-        predator_repulsion: 5.0,
+        predator_repulsion: 1.0,
         max_acceleration: 1.0,
         max_vel: 1.0,
         boundary: 20.0, // not in use
     };
     let pred_params = PredParams {
-        vision_radius: 3.0,
+        vision_radius: 2.0,
         current_direction: 0.0, // not in use
         prey_alignment: 0.0,
-        prey_attraction: 5.0,
+        prey_attraction: 1.0,
         nearest_prey: 0.0, // not in use
-        predator_alignment: 1.0,
-        predator_attraction: 2.0,
-        predator_repulsion: 2.0,
+        predator_alignment: 0.5,
+        predator_attraction: 0.5,
+        predator_repulsion: 0.1,
         max_acceleration: 1.0,
-        max_vel: 0.7,
+        max_vel: 1.0,
         boundary: 20.0, //not in use
     };
     let params = Parameters {
         // Model
-        num_prey: 1000,
+        num_prey: 500,
         num_pred: 5,
         bound_length: 10.0,
-        boundary_condition: BC::Soft(2.5), // only current BCmain
-        times: Time::new(1.0 / 60.0, 50.0),
+        boundary_condition: BC::Soft(2.0), // only current BCmain
+        times: Time::new(1.0 / 20.0, 150.0),
         prey_params,
         pred_params,
     };
@@ -66,7 +68,8 @@ fn test_model() {
     // let path = String::from("./csv/positions_10_pred.csv");
     // output_positions(path, &model);
     //graphics::start_game();
-    graphics::start_game_from_parameters(&params);
+    //graphics::start_game_from_parameters(&params);
+    death_distribution(params, 30);
 }
 
 fn diagram_generator() {
@@ -227,4 +230,42 @@ fn test_abc(n: usize, eps: f32, max_time: f32) {
         results[min_index][1], results[min_index][2], results[min_index][3]);
     println!("{} pred alignment \n{} pred centering \n{} pred repulsion",
         results[min_index][4], results[min_index][5], results[min_index][6]);
+}
+
+fn death_distribution(params: Parameters, num_iter: usize) {
+    let mut results: Vec<f32> = Vec::new();
+    for i in 0..num_iter {
+        println!("Running model {}", i);
+        let mut model = Model::from(&params);
+        model.run();
+        let prop_dead: f32 = final_prop_dead(&model);
+        results.push(prop_dead);
+    }
+    println!("{:?}", results);
+    println!("Mean: {}, STD: {}", mean(&results).unwrap(), std_deviation(&results).unwrap());
+}
+
+fn mean(data: &[f32]) -> Option<f32> {
+    let sum = data.iter().sum::<f32>() as f32;
+    let count = data.len();
+
+    match count {
+        positive if positive > 0 => Some(sum / count as f32),
+        _ => None,
+    }
+}
+
+fn std_deviation(data: &[f32]) -> Option<f32> {
+    match (mean(data), data.len()) {
+        (Some(data_mean), count) if count > 0 => {
+            let variance = data.iter().map(|value| {
+                let diff = data_mean - (*value as f32);
+
+                diff * diff
+            }).sum::<f32>() / count as f32;
+
+            Some(variance.sqrt())
+        },
+        _ => None
+    }
 }

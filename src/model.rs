@@ -779,7 +779,7 @@ impl Model {
                                                     self.bound_length,
                                                     &self.boundary_condition,
                                                 );
-                                                if dist < 0.1 {
+                                                if dist < 0.05 {
                                                     self.grid.cells[index_i as usize][index_j as usize]
                                                         .agent_indices
                                                         .remove(a_2_i);
