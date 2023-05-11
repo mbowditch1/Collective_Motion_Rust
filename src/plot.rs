@@ -108,12 +108,25 @@ pub fn final_prop_dead(model: &Model) -> f32 {
     for i in 0..model.num_prey {
         match model.agents[i].dead {
             State::Alive => (),
-            State::Dead(index) => {
+            State::Dead(index,_) => {
                 count += 1;
             },
         }
     }
     (count as f32)/(model.num_prey as f32)
+}
+
+pub fn death_positions(model: &Model) -> Vec<Vec<f32>> {
+    let mut positions = Vec::new();
+    for i in 0..model.num_prey {
+        match model.agents[i].dead {
+            State::Alive => (),
+            State::Dead(_,pos) => {
+                positions.push(pos.to_array().to_vec());
+            },
+        }
+    }
+    positions
 }
 
 pub fn plot_prey_alive(model: &Model) {
@@ -122,7 +135,7 @@ pub fn plot_prey_alive(model: &Model) {
     for i in 0..model.num_prey {
         match model.agents[i].dead {
             State::Alive => (),
-            State::Dead(index) => {
+            State::Dead(index,_) => {
                 death_index.push(index);
             },
         }
