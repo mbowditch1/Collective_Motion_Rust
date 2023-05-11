@@ -42,6 +42,7 @@ pub struct PredParams {
     pub max_acceleration: f32,
     pub max_vel: f32,
     pub boundary: f32,
+    pub cooldown: f32,
 }
 
 #[derive(Debug, Clone)]
@@ -206,6 +207,7 @@ impl PredParams {
             max_acceleration: 0.8,
             max_vel: 0.8,
             vision_radius: 1.0,
+            cooldown: 0.0,
         }
     }
 
@@ -321,6 +323,7 @@ impl PredParams {
             max_acceleration,
             max_vel,
             boundary,
+            cooldown: 0.0,
         }
     }
 }
@@ -360,6 +363,7 @@ pub struct Agent {
     points: Vec<Vec2>,
     polygon: Option<graphics::Mesh>,
     pub agent_type: AgentType,
+    pub kill_cooldown: f32,
     pub dead: State,
 }
 
@@ -382,11 +386,12 @@ impl Agent {
         let y = normal.sample(&mut rng);
         let mut v_vec = Vec2::new(x, y);
         v_vec = v_vec.normalize();
+        let mut kill_cooldown = 0.0;
 
         let multiplier;
-        match agent_type {
+        match &agent_type {
             AgentType::Prey(..) => multiplier = 1.0,
-            AgentType::Predator(..) => multiplier = 1.5,
+            AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown }, 
         }
 
         let point_1 = Vec2::new(0.0, -(BOID_SIZE*multiplier) / 2.0);
@@ -411,6 +416,7 @@ impl Agent {
             polygon: None,
             agent_type,
             dead: State::Alive,
+            kill_cooldown,
         }
     }
     pub fn new_graphical(ctx: &mut Context, b_length: f32, agent_type: AgentType) -> Agent {
@@ -425,11 +431,12 @@ impl Agent {
         let y = normal.sample(&mut rng);
         let mut v_vec = Vec2::new(x, y);
         v_vec = v_vec.normalize();
+        let mut kill_cooldown = 0.0;
 
         let multiplier;
-        match agent_type {
+        match &agent_type {
             AgentType::Prey(..) => multiplier = 1.0,
-            AgentType::Predator(..) => multiplier = 1.5,
+            AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown }, 
         }
         let point_1 = Vec2::new(0.0, -(BOID_SIZE)*multiplier / 2.0);
         let point_2 = Vec2::new((BOID_SIZE)*multiplier / 4.0, (BOID_SIZE)*multiplier / 2.0);
@@ -469,7 +476,19 @@ impl Agent {
             },
             agent_type,
             dead: State::Alive,
+            kill_cooldown,
         }
+    }
+
+    pub fn reset_cooldown(&mut self) {
+        match &self.agent_type {
+            AgentType::Predator(_, params) => self.kill_cooldown = params.cooldown, 
+            _ => (),
+        }
+    }
+
+    pub fn decrease_cooldown(&mut self, dt: f32) {
+        self.kill_cooldown -= dt;
     }
 
     pub fn update(&mut self, times: &Time, acceleration: Vec2, max_vel: f32) {

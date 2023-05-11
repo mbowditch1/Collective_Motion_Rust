@@ -51,13 +51,14 @@ fn test_model() {
         max_acceleration: 1.0,
         max_vel: 1.0,
         boundary: 20.0, //not in use
+        cooldown: 0.0, 
     };
     let params = Parameters {
         // Model
         num_prey: 500,
         num_pred: 5,
         bound_length: 10.0,
-        boundary_condition: BC::Periodic, // only current BCmain
+        boundary_condition: BC::Soft(2.0), // only current BCmain
         times: Time::new(1.0 / 60.0, 150.0),
         prey_params,
         pred_params,
@@ -68,8 +69,8 @@ fn test_model() {
     // let path = String::from("./csv/positions_10_pred.csv");
     // output_positions(path, &model);
     //graphics::start_game();
-    graphics::start_game_from_parameters(&params);
-    //death_distribution(params, 30, true);
+    //graphics::start_game_from_parameters(&params);
+    death_distribution(params, 30, true);
 }
 
 fn diagram_generator() {
@@ -98,6 +99,7 @@ fn diagram_generator() {
         max_acceleration: 0.5,
         max_vel: 2.0,
         boundary: 20.0, //not in use
+        cooldown: 0.5,
     };
     let params = Parameters {
         // Model
@@ -139,6 +141,7 @@ fn test_plots() {
             max_acceleration: 1.0,
             max_vel: 0.7,
             boundary: 20.0, //not in use
+            cooldown: 0.5,
         };
         let params = Parameters {
             // Model
