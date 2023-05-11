@@ -49,15 +49,15 @@ fn test_model() {
         predator_attraction: 4.30243976751066,
         predator_repulsion: 1.7507335570055953,
         max_acceleration: 1.0,
-        max_vel: 1.2,
+        max_vel: 1.0,
         boundary: 20.0, //not in use
     };
     let params = Parameters {
         // Model
-        num_prey: 1000,
-        num_pred: 10,
-        bound_length: 20.0,
-        boundary_condition: BC::Soft(2.0), // only current BCmain
+        num_prey: 500,
+        num_pred: 5,
+        bound_length: 10.0,
+        boundary_condition: BC::Periodic, // only current BCmain
         times: Time::new(1.0 / 60.0, 150.0),
         prey_params,
         pred_params,
@@ -95,14 +95,14 @@ fn diagram_generator() {
         predator_alignment: 1.0,
         predator_attraction: 2.0,
         predator_repulsion: 2.0,
-        max_acceleration: 1.0,
-        max_vel: 0.75,
+        max_acceleration: 0.5,
+        max_vel: 2.0,
         boundary: 20.0, //not in use
     };
     let params = Parameters {
         // Model
         num_prey: 1000,
-        num_pred: 0,
+        num_pred: 5,
         bound_length: 20.0,
         boundary_condition: BC::Periodic, // only current BC
         times: Time::new(1.0 / 60.0, 50.0),

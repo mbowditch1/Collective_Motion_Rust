@@ -578,13 +578,11 @@ impl Agent {
         ) {
             Clamped::Min(min) => {
                 self.positions[times.current_index + 1].x = min;
-                self.velocities[times.current_index + 1].x =
-                    -1.0 * self.velocities[times.current_index + 1].x;
+                self.velocities[times.current_index + 1] = Vec2::ZERO;
             }
             Clamped::Max(max) => {
                 self.positions[times.current_index + 1].x = max;
-                self.velocities[times.current_index + 1].x =
-                    -1.0 * self.velocities[times.current_index + 1].x;
+                self.velocities[times.current_index + 1] = Vec2::ZERO;
             }
             Clamped::Val(_val) => (),
         }
@@ -595,15 +593,49 @@ impl Agent {
         ) {
             Clamped::Min(min) => {
                 self.positions[times.current_index + 1].y = min;
-                self.velocities[times.current_index + 1].y =
-                    -1.0 * self.velocities[times.current_index + 1].y;
+                self.velocities[times.current_index + 1] = Vec2::ZERO;
             }
             Clamped::Max(max) => {
                 self.positions[times.current_index + 1].y = max;
-                self.velocities[times.current_index + 1].y =
-                    -1.0 * self.velocities[times.current_index + 1].y;
+                self.velocities[times.current_index + 1] = Vec2::ZERO;
             }
             Clamped::Val(_val) => (),
         }
     }
+//    pub fn hard_boundary(&mut self, times: &Time, boundary_length: f32) {
+//        match clamp(
+//            self.positions[times.current_index + 1].x,
+//            0.0,
+//            boundary_length,
+//        ) {
+//            Clamped::Min(min) => {
+//                self.positions[times.current_index + 1].x = min;
+//                self.velocities[times.current_index + 1].x =
+//                    -1.0 * self.velocities[times.current_index + 1].x;
+//            }
+//            Clamped::Max(max) => {
+//                self.positions[times.current_index + 1].x = max;
+//                self.velocities[times.current_index + 1].x =
+//                    -1.0 * self.velocities[times.current_index + 1].x;
+//            }
+//            Clamped::Val(_val) => (),
+//        }
+//        match clamp(
+//            self.positions[times.current_index + 1].y,
+//            0.0,
+//            boundary_length,
+//        ) {
+//            Clamped::Min(min) => {
+//                self.positions[times.current_index + 1].y = min;
+//                self.velocities[times.current_index + 1].y =
+//                    -1.0 * self.velocities[times.current_index + 1].y;
+//            }
+//            Clamped::Max(max) => {
+//                self.positions[times.current_index + 1].y = max;
+//                self.velocities[times.current_index + 1].y =
+//                    -1.0 * self.velocities[times.current_index + 1].y;
+//            }
+//            Clamped::Val(_val) => (),
+//        }
+//    }
 }
