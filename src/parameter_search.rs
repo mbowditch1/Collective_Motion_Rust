@@ -43,6 +43,7 @@ pub fn prey_optimise(x: &DVector<f64>) -> f64 {
         max_acceleration: 1.0,
         max_vel: 1.0,
         boundary: 20.0, //not in use
+        cooldown: 0.5,
     };
     let params = Parameters {
         // Model
@@ -91,6 +92,7 @@ pub fn pred_optimise(x: &DVector<f64>) -> f64 {
         max_acceleration: 1.0,
         max_vel: 1.0,
         boundary: 20.0, //not in use
+        cooldown: 0.5,
     };
     let params = Parameters {
         // Model

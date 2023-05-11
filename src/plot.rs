@@ -239,6 +239,7 @@ pub fn random_params_prey(prey_max: f32, pred_max: f32, max_time: f32) -> Parame
         max_acceleration: 1.0,
         max_vel: 0.75,
         boundary: 20.0, //not in use
+        cooldown: 0.5,
     };
     let params = Parameters {
         // Model
