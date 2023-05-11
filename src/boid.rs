@@ -366,7 +366,7 @@ pub struct Agent {
 #[derive(Debug)]
 pub enum State{
     Alive,
-    Dead(usize),
+    Dead(usize,Vec2),
 }
 
 impl Agent {
@@ -527,7 +527,7 @@ impl Agent {
         //     return
         // }
         match self.dead {
-            State::Dead(_) => return,
+            State::Dead(..) => return,
             _ => (),
         }
         let index = self.positions.len() - 1 - offset;

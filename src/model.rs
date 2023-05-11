@@ -783,7 +783,9 @@ impl Model {
                                                     self.grid.cells[index_i as usize][index_j as usize]
                                                         .agent_indices
                                                         .remove(a_2_i);
-                                                    self.agents[a_2_index].dead = State::Dead(self.times.current_index);
+                                                    self.agents[a_2_index].dead = State::Dead(
+                                                            self.times.current_index,
+                                                            self.agents[a_2_index].positions[self.times.current_index].clone());
                                                     break 'outer
                                                 }
                                             },

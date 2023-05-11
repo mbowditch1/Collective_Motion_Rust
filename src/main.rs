@@ -16,13 +16,14 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    test_model();
+    // test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
     // test_abc(300, 0.1, 400.0);
+    test_death_positions();
 }
 
 fn test_model() {
@@ -180,6 +181,17 @@ fn test_prey_alive() {
     model.times = times;
     model.run();
     plot_prey_alive(&model);
+}
+
+fn test_death_positions() {
+    let mut model = Model::new();
+    let mut times = Time::new(1.0 / 60.0, 100.0);
+    model.times = times;
+    model.run();
+    let values = death_positions(&model);
+    if let Err(e) = write_to_file(String::from("./csv/death_positions.csv"),values){
+        eprintln!("{}", e);
+    }
 }
 
 fn run_test() {
