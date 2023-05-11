@@ -371,10 +371,18 @@ pub enum State{
 
 impl Agent {
     pub fn new(b_length: f32, agent_type: AgentType) -> Agent {
-        let x: f32 = rand::thread_rng().gen::<f32>() * b_length;
-        let y: f32 = rand::thread_rng().gen::<f32>() * b_length;
-        let mut a_vec = Vec2::new(x, y);
-
+        let mut a_vec = match agent_type {
+            AgentType::Prey(..) => {
+                let y: f32 = rand::thread_rng().gen_range(2.0/10.0..1.0) * b_length;
+                let x: f32 = rand::thread_rng().gen_range(0.0..1.0) * b_length;
+                Vec2::new(x, y)
+            },
+            AgentType::Predator(..) => {
+                let y: f32 = rand::thread_rng().gen_range(0.0..1.0/10.0) * b_length;
+                let x: f32 = rand::thread_rng().gen_range(0.0..1.0) * b_length;
+                Vec2::new(x, y)
+            },
+        };
         // Change to include negatives
         let mut rng = rand::thread_rng();
         let normal = Normal::new(0.0, 0.1).unwrap();
@@ -414,9 +422,18 @@ impl Agent {
         }
     }
     pub fn new_graphical(ctx: &mut Context, b_length: f32, agent_type: AgentType) -> Agent {
-        let x: f32 = rand::thread_rng().gen::<f32>() * b_length;
-        let y: f32 = rand::thread_rng().gen::<f32>() * b_length;
-        let mut a_vec = Vec2::new(x, y);
+        let mut a_vec = match agent_type {
+            AgentType::Prey(..) => {
+                let y: f32 = rand::thread_rng().gen_range(2.0/10.0..1.0) * b_length;
+                let x: f32 = rand::thread_rng().gen_range(0.0..1.0) * b_length;
+                Vec2::new(x, y)
+            },
+            AgentType::Predator(..) => {
+                let y: f32 = rand::thread_rng().gen_range(0.0..1.0/10.0) * b_length;
+                let x: f32 = rand::thread_rng().gen_range(0.0..1.0) * b_length;
+                Vec2::new(x, y)
+            },
+        };
 
         // Change to include negatives
         let mut rng = rand::thread_rng();
