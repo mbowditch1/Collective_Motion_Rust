@@ -24,6 +24,7 @@ pub fn write_to_file(path: String, values: Vec<Vec<f32>>) -> Result<(), Box<dyn 
 
     Ok(())
 }
+
 // Plot takes in an array of Models and outputs a CSV of data points for each time step
 // for each model? (or average)
 pub fn order(agents: &Vec<Agent>, time_step: usize) -> f32 {
@@ -101,6 +102,24 @@ pub fn plot_number_groups(model: &Model) {
     if let Err(e) = plot_test("plotters-doc-data/0.png", &values) {
         eprintln!("{}", e);
     }
+}
+
+pub fn angular_velocity(model: &Model) {
+    let mut positions = Vec::new();
+    let mut velocities = Vec::new();
+    let mut times = Vec::new();
+    let num_steps = model.times.times.len();
+    for i in 0..num_steps {
+        for a in model.agents.iter() {
+            positions.push(a.positions[i].to_array().to_vec());
+            velocities.push(a.velocities[i].to_array().to_vec());
+            times.push(vec![model.times.times[i],model.times.times[i]]);
+        }
+    }
+    // let values = vec![&positions, &velocities, &times];
+    // if let Err(e) = write_to_file(String::from("./csv/angular_velocity.csv"), values) {
+    //     eprintln!("{}",e);
+    // }
 }
 
 pub fn final_prop_dead(model: &Model) -> f32 {
@@ -193,18 +212,35 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-pub fn output_positions(path: String, model: &Model) {
+pub fn output_pos_vel(path: String, model: &Model) {
     let num_steps = model.times.times.len();
     let mut values = vec![model.times.times.clone()];
     for a in model.agents.iter() {
-        let mut x_positions: Vec<f32> = Vec::new();
-        let mut y_positions: Vec<f32> = Vec::new();
-        for i in 0..num_steps {
-            x_positions.push(a.positions[i].x);
-            y_positions.push(a.positions[i].y);
+        match a.agent_type {
+            AgentType::Prey(..) => {
+                let mut x_positions: Vec<f32> = Vec::new();
+                let mut y_positions: Vec<f32> = Vec::new();
+                let mut x_velocities: Vec<f32> = Vec::new();
+                let mut y_velocities: Vec<f32> = Vec::new();
+                for i in 0..a.positions.len() {
+                    x_positions.push(a.positions[i].x.clone());
+                    y_positions.push(a.positions[i].y.clone());
+                    x_velocities.push(a.velocities[i].x.clone());
+                    y_velocities.push(a.velocities[i].y.clone());
+                    }
+                for i in 0..(num_steps-a.positions.len()) {
+                    x_positions.push(-10000.0);
+                    y_positions.push(-10000.0);
+                    x_velocities.push(-10000.0);
+                    y_velocities.push(-10000.0);
+                }
+                values.push(x_positions);
+                values.push(y_positions);
+                values.push(x_velocities);
+                values.push(y_velocities);
+            },
+            _ => (),
         }
-        values.push(x_positions);
-        values.push(y_positions);
     }
     if let Err(e) = write_to_file(path, values) {
         eprintln!("{}", e);

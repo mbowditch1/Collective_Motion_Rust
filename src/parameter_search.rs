@@ -47,11 +47,11 @@ pub fn prey_optimise(x: &DVector<f64>) -> f64 {
     };
     let params = Parameters {
         // Model
-        num_prey: 500,
-        num_pred: 5,
+        num_prey: 400,
+        num_pred: 3,
         bound_length: 10.0,
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 20.0, 150.0),
+        times: Time::new(1.0 / 20.0, 5.0),
         prey_params,
         pred_params,
     };
@@ -70,7 +70,7 @@ pub fn pred_optimise(x: &DVector<f64>) -> f64 {
     let prey_params = PreyParams {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
-        prey_alignment: 11.663819253664858, 
+        prey_alignment: 11.663819253664858,
         prey_attraction: -2.598339198694632,
         prey_repulsion: 8.98344680799392,
         predator_alignment: 1.6121609117313664,
@@ -96,11 +96,11 @@ pub fn pred_optimise(x: &DVector<f64>) -> f64 {
     };
     let params = Parameters {
         // Model
-        num_prey: 500,
-        num_pred: 5,
-        bound_length: 10.0,
+        num_prey: 400,
+        num_pred: 27,
+        bound_length: 30.0,
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 20.0, 150.0),
+        times: Time::new(1.0 / 20.0, 5.0),
         prey_params,
         pred_params,
     };
@@ -138,7 +138,7 @@ fn std_deviation(data: &[f32]) -> Option<f32> {
 pub fn death_distribution(params: Parameters, num_iter: usize, verbose: bool) -> f64 {
     let mut results: Vec<f32> = Vec::new();
     for i in 0..num_iter {
-        if verbose { println!("Running model {}", i); } 
+        if verbose { println!("Running model {}", i); }
         let mut model = Model::from(&params);
         model.run();
         let prop_dead: f32 = final_prop_dead(&model);
@@ -197,4 +197,3 @@ pub fn optimise_deaths_pred() {
     let results = cmaes_state.run_parallel();
     cmaes_state.get_plot().unwrap().save_to_file("plot.png", true).unwrap();
 }
-

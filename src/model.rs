@@ -750,7 +750,7 @@ impl Model {
                     let a_index = self.grid.cells[c_i][c_j].agent_indices[a_i];
                     match &self.agents[a_index].agent_type {
                         AgentType::Predator(_, params) => {
-                            if self.agents[a_index].kill_cooldown <= 0.0 { 
+                            if self.agents[a_index].kill_cooldown <= 0.0 {
                                 for n in 0..self.vision_ratio + 2 {
                                     for m in 0..self.vision_ratio + 2 {
                                         let index_i =
@@ -779,11 +779,14 @@ impl Model {
                                                         self.bound_length,
                                                         &self.boundary_condition,
                                                     );
-                                                    if dist < 0.05 {
+                                                    if dist < 0.0 {
                                                         self.grid.cells[index_i as usize][index_j as usize]
                                                             .agent_indices
                                                             .remove(a_2_i);
-                                                        self.agents[a_2_index].dead = State::Dead(self.times.current_index);
+                                                        self.agents[a_2_index].dead = State::Dead(
+                                                            self.times.current_index,
+                                                            self.agents[a_2_index].positions[self.times.current_index].clone()
+                                                        );
                                                         self.agents[a_index].reset_cooldown();
                                                         break 'outer
                                                     }
