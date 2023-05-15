@@ -13,7 +13,8 @@ use cmaes::{CMAESOptions, DVector, PlotOptions, restart};
 // x[3] = predator_alignment
 // x[4] = predator_repulsion
 //pub fn prey_optimise(x: ArrayView1<f64>) -> f64 {
-pub fn prey_optimise(x: &DVector<f64>) -> f64 {
+pub fn prey_optimise(x: &DVector<f64>, behaviour_params: &Vec<f64>,
+    physical_params: &Vec<f32>, space_params: &Vec<f32>) -> f64 {
     // If out of bounds punish
     if x[0] > 1.0 || x[1] > 1.0 || x[2] > 1.0 || x[3] > 1.0 || x[4] > 1.0 ||
         x[0] < -1.0 || x[1] < -1.0 || x[2] < -1.0 || x[3] < -1.0 || x[4] < -1.0 {
@@ -36,33 +37,34 @@ pub fn prey_optimise(x: &DVector<f64>) -> f64 {
         vision_radius: 2.0,
         current_direction: 0.0, // not in use
         prey_alignment: 0.0,
-        prey_attraction: 1.0,
+        prey_attraction: behaviour_params[0] as f32, //0.1813,
         nearest_prey: 0.0, // not in use
-        predator_alignment: 0.5,
-        predator_attraction: 0.5,
-        predator_repulsion: 0.1,
-        max_acceleration: 2.0,
-        max_vel: 1.0,
+        predator_alignment: behaviour_params[1] as f32, //0.5662,
+        predator_attraction: behaviour_params[2] as f32, //0.1217,
+        predator_repulsion: behaviour_params[3] as f32, //0.0315,
+        max_acceleration: physical_params[0],
+        max_vel: physical_params[1],
         boundary: 20.0, //not in use
         cooldown: 0.5,
     };
     let params = Parameters {
         // Model
         num_prey: 400,
-        num_pred: 3,
-        bound_length: 10.0,
+        num_pred: space_params[1] as usize,
+        bound_length: space_params[0],
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 20.0, 150.0),
+        times: Time::new(1.0 / 20.0, 300.0),
         prey_params,
         pred_params,
     };
     //let mut model = Model::from(&params);
     //model.run();
     //final_prop_dead(&model) as f64
-    death_distribution(params, 30, true)
+    death_distribution(params, 30, false)
 }
 
-pub fn pred_optimise(x: &DVector<f64>) -> f64 {
+pub fn pred_optimise(x: &DVector<f64>, behaviour_params: &Vec<f64>,
+    physical_params: &Vec<f32>, space_params: &Vec<f32>) -> f64 {
     // If out of bounds punish
     if x[0] > 1.0 || x[1] > 1.0 || x[2] > 1.0 || x[3] > 1.0 ||
        x[0] < -1.0 || x[1] < -1.0 || x[2] < -1.0 || x[3] < -1.0 {
@@ -71,12 +73,12 @@ pub fn pred_optimise(x: &DVector<f64>) -> f64 {
     let prey_params = PreyParams {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
-        prey_alignment: 0.9582261937705074, //11.663819253664858,
-        prey_attraction: -0.0711222698745498, //-2.598339198694632,
-        prey_repulsion: 0.9824784427027915, //8.98344680799392,
-        predator_alignment: 0.6863455709757276, //1.6121609117313664,
+        prey_alignment: behaviour_params[0] as f32, //0.9582261937705074,
+        prey_attraction: behaviour_params[1] as f32, //-0.0711222698745498,
+        prey_repulsion: behaviour_params[2] as f32, //0.9824784427027915,
+        predator_alignment: behaviour_params[3] as f32, //0.6863455709757276,
         predator_centering: 0.0,
-        predator_repulsion: 0.7396519317096918, //8.438545382876004,
+        predator_repulsion: behaviour_params[4] as f32, //0.7396519317096918,
         max_acceleration: 2.0,
         max_vel: 1.0,
         boundary: 20.0, // not in use
@@ -90,18 +92,18 @@ pub fn pred_optimise(x: &DVector<f64>) -> f64 {
         predator_alignment: x[1] as f32,
         predator_attraction: x[2] as f32,
         predator_repulsion: x[3] as f32,
-        max_acceleration: 2.0,
-        max_vel: 1.0,
+        max_acceleration: physical_params[0],
+        max_vel: physical_params[1],
         boundary: 20.0, //not in use
         cooldown: 0.5,
     };
     let params = Parameters {
         // Model
         num_prey: 400,
-        num_pred: 3,
-        bound_length: 10.0,
+        num_pred: space_params[1] as usize,
+        bound_length: space_params[0],
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 20.0, 150.0),
+        times: Time::new(1.0 / 20.0, 300.0),
         prey_params,
         pred_params,
     };
@@ -139,13 +141,13 @@ fn std_deviation(data: &[f32]) -> Option<f32> {
 pub fn death_distribution(params: Parameters, num_iter: usize, verbose: bool) -> f64 {
     let mut results: Vec<f32> = Vec::new();
     for i in 0..num_iter {
-        // if verbose { println!("Running model {}", i); }
+        if verbose { println!("Running model {}", i); }
         let mut model = Model::from(&params);
         model.run();
         let prop_dead: f32 = final_prop_dead(&model);
         results.push(prop_dead);
     }
-    // if verbose { println!("{:?}", results); }
+    if verbose { println!("{:?}", results); }
     if verbose { println!("Mean: {}, STD: {}", mean(&results).unwrap(), std_deviation(&results).unwrap()); }
     mean(&results).unwrap() as f64
 }
@@ -168,64 +170,122 @@ pub fn death_distribution(params: Parameters, num_iter: usize, verbose: bool) ->
 //    println!("Final optimized arguments: {}", ans);
 //}
 
-pub fn optimise_deaths() {
-    //let sphere = |x: &DVector<f64>| x.iter().map(|xi| xi.powi(2)).sum();
+// pub fn optimise_deaths() {
+//     //let sphere = |x: &DVector<f64>| x.iter().map(|xi| xi.powi(2)).sum();
+//
+//     let dim = 5;
+//     let mut cmaes_state = CMAESOptions::new(vec![0.5, 0.5, 0.5, 0.5, 0.5], 0.5)
+//         .enable_printing(20)
+//         .population_size(20)
+//         .max_generations(10)
+//         .enable_plot(PlotOptions::new(0, false))
+//         .parallel_update(true)
+//         .build(prey_optimise)
+//         .unwrap();
+//
+//     let results = cmaes_state.run_parallel();
+//     cmaes_state.get_plot().unwrap().save_to_file("plot.png", true).unwrap();
+// }
 
-    let dim = 5;
-    let mut cmaes_state = CMAESOptions::new(vec![0.5, 0.5, 0.5, 0.5, 0.5], 0.5)
-        .enable_printing(20)
-        .population_size(20)
-        .max_generations(10)
-        .enable_plot(PlotOptions::new(0, false))
-        .parallel_update(true)
-        .build(prey_optimise)
-        .unwrap();
+// pub fn optimise_deaths_pred() {
+//     let mut cmaes_state = CMAESOptions::new(vec![1.0, 0.5, 0.5, 0.1], 0.5)
+//         .enable_printing(20)
+//         .population_size(20)
+//         .max_generations(10)
+//         .enable_plot(PlotOptions::new(0, false))
+//         .parallel_update(true)
+//         .build(pred_optimise)
+//         .unwrap();
+//
+//     let results = cmaes_state.run_parallel();
+//     cmaes_state.get_plot().unwrap().save_to_file("plot.png", true).unwrap();
+// }
 
-    let results = cmaes_state.run_parallel();
-    cmaes_state.get_plot().unwrap().save_to_file("plot.png", true).unwrap();
-}
-
-pub fn optimise_deaths_pred() {
-    let mut cmaes_state = CMAESOptions::new(vec![1.0, 0.5, 0.5, 0.1], 0.5)
-        .enable_printing(20)
-        .population_size(20)
-        .max_generations(10)
-        .enable_plot(PlotOptions::new(0, false))
-        .parallel_update(true)
-        .build(pred_optimise)
-        .unwrap();
-
-    let results = cmaes_state.run_parallel();
-    cmaes_state.get_plot().unwrap().save_to_file("plot.png", true).unwrap();
-}
-
-pub fn optimise_deaths2() {
+pub fn optimise_deaths_prey(behaviour_params: &Vec<f64>, physical_params: &Vec<f32>,
+    space_params: &Vec<f32>) -> (DVector<f64>, f64) {
     let dim = 5;
     let strategy = restart::RestartStrategy::BIPOP(Default::default());
     let restarter = restart::RestartOptions::new(dim, -1.0..=1.0, strategy)
         .enable_printing(true)
-        .max_generations_per_run(10)
-        .max_function_evals(1000)
+        .max_generations_per_run(1)
+        .max_function_evals(1)
         .build()
         .unwrap();
 
-    let results = restarter.run_parallel(|| prey_optimise);
+    let func = |x: &DVector<f64>| prey_optimise(&x, behaviour_params, physical_params, space_params);
+    let results = restarter.run_parallel(|| func);
+    match results.best {
+        Some(best_params) => {
+            return (best_params.point, best_params.value)
+        },
+        _ => return(DVector::from_vec(vec![0.0;5]), 1.0),
+    }
 }
 
-pub fn optimise_deaths2_pred() {
+pub fn optimise_deaths_pred(behaviour_params: &Vec<f64>, physical_params: &Vec<f32>,
+    space_params: &Vec<f32>) -> (DVector<f64>, f64) {
     let dim = 4;
     let strategy = restart::RestartStrategy::BIPOP(Default::default());
     let restarter = restart::RestartOptions::new(dim, -1.0..=1.0, strategy)
         .enable_printing(true)
-        .max_generations_per_run(10)
-        .max_function_evals(1000)
+        .max_generations_per_run(1)
+        .max_function_evals(1)
         .build()
         .unwrap();
 
-    let results = restarter.run_parallel(|| pred_optimise);
+    let func = |x: &DVector<f64>| pred_optimise(&x, behaviour_params, physical_params, space_params);
+    let results = restarter.run_parallel(|| func);
+    match results.best {
+        Some(best_params) => {
+            return (best_params.point, best_params.value)
+        },
+        _ => return(DVector::from_vec(vec![0.0;4]), 1.0),
+    }
 }
 
-//0.1813
-//0.5662
-//0.1217
-//0.0315
+pub fn optimise_regime() {
+    let regimes: Vec<Vec<f32>> = vec![vec![2.0,1.0], vec![3.0,1.25], vec![1.0, 0.75]];
+    let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0], vec![20.0,12.0], vec![30.0,27.0]];
+    for physical_params in regimes.iter() {
+        let mut output = Result::new();
+        for space_params in scenarios.iter() {
+            // prey optimisation
+            let result = optimise_deaths_prey(
+                &output.pred_behaviour_params.last().unwrap(),
+                &physical_params,
+                &space_params
+            );
+            output.prey_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>().clone());
+            output.final_predation.push(result.1);
+            println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
+                output.pred_behaviour_params, output.final_predation);
+
+            // predator optimisation
+            let result = optimise_deaths_pred(
+                &output.prey_behaviour_params.last().unwrap(),
+                &physical_params,
+                &space_params
+            );
+            output.pred_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>());
+            output.final_predation.push(result.1);
+            println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
+                output.pred_behaviour_params, output.final_predation);
+        }
+    }
+}
+
+pub struct Result {
+    prey_behaviour_params: Vec<Vec<f64>>,
+    pred_behaviour_params: Vec<Vec<f64>>,
+    final_predation: Vec<f64>,
+}
+
+impl Result {
+    pub fn new() -> Result {
+        Result {
+            prey_behaviour_params: vec![vec![0.0;5]],
+            pred_behaviour_params: vec![vec![0.0;4]],
+            final_predation: Vec::new(),
+        }
+    }
+}
