@@ -152,6 +152,7 @@ pub fn plot_prey_alive(model: &Model) {
     let num_steps = model.times.times.len();
     let mut death_index: Vec<usize> = Vec::new();
     for i in 0..model.num_prey {
+        println!("{}",i);
         match model.agents[i].dead {
             State::Alive => (),
             State::Dead(index,_) => {
@@ -179,10 +180,10 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         plot_data.push((values[0][i] as f64, values[1][i] as f64));
     }
     let root = BitMapBackend::new("plotters-doc-data/0.png", (640, 480)).into_drawing_area();
-    let min_x = values[0][0];
-    let max_x = values[0].last().unwrap();
-    let min_y = values[1][0];
-    let max_y = values[1].last().unwrap();
+    let max_x = values[0][0];
+    let min_x = values[0].last().unwrap();
+    let max_y = values[1][0];
+    let min_y = values[1].last().unwrap();
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
         .caption("Total Velocity", ("sans-serif", 50).into_font())
@@ -190,7 +191,7 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         .x_label_area_size(30)
         .y_label_area_size(30)
         // .build_cartesian_2d(min_x..*max_x, min_y..*max_y)?;
-        .build_cartesian_2d(0.0..10000.0, 0.0..200.0)?;
+        .build_cartesian_2d(0.0..100.0, 5000.0..4500.0)?;
 
     chart.configure_mesh().draw()?;
 

@@ -16,13 +16,13 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    test_model();
+    // test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
-    // test_abc(300, 0.1, 400.0);
+    optimise_deaths2_pred();
     // test_death_positions();
 }
 
@@ -30,13 +30,13 @@ fn test_model() {
     let prey_params = PreyParams {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
-        prey_alignment: 11.663819253664858,
-        prey_attraction: -2.598339198694632,
-        prey_repulsion: 8.98344680799392,
-        predator_alignment: 1.6121609117313664,
+        prey_alignment: 2.7926018223248583,//11.66381925366485,
+        prey_attraction: 0.3812318014144567,//-2.598339198694632,
+        prey_repulsion: 0.16982504904959173,//8.98344680799392,
+        predator_alignment: -0.42798332230412983,//1.6121609117313664,
         predator_centering: 0.0,
-        predator_repulsion: 8.438545382876004,
-        max_acceleration: 1.0,
+        predator_repulsion: 1.5078236609330973,//8.438545382876004,
+        max_acceleration: 2.0,
         max_vel: 1.0,
         boundary: 20.0, // not in use
     };
@@ -49,8 +49,8 @@ fn test_model() {
         predator_alignment: 12.80190134440911,
         predator_attraction: 4.30243976751066,
         predator_repulsion: 1.7507335570055953,
-        max_acceleration: 1.0,
-        max_vel: 1.0,
+        max_acceleration: 2.0,
+        max_vel: 1.1,
         boundary: 20.0, //not in use
         cooldown: 0.0,
     };
@@ -59,21 +59,21 @@ fn test_model() {
         num_prey: 400,
         num_pred: 3,
         bound_length: 10.0,
-        boundary_condition: BC::Soft(1.0), // only current BCmain
-        times: Time::new(1.0 / 60.0, 300.0),
+        boundary_condition: BC::Soft(2.0), // only current BCmain
+        times: Time::new(1.0 / 60.0, 10.0),
         prey_params,
         pred_params,
     };
-    // let mut model = Model::from(&params);
+    let mut model = Model::from(&params);
     //let mut model = Model::new();
-    // model.run();
+    model.run();
+    // println!("yay");
     // let path = String::from("./csv/positions_10_pred.csv");
     // output_positions(path, &model);
     // graphics::start_game();
     graphics::start_game_from_parameters(&params);
     // death_distribution(params, 30, true);
     // output_pos_vel(String::from("./csv/angular_velocity_pos.csv"), &model);
-    // output_velocities(String::from("./csv/angular_velocity_vel.csv"), &model);
 }
 
 fn diagram_generator() {

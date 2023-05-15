@@ -98,14 +98,14 @@ pub fn distance(vec_1: &Vec2, vec_2: &Vec2, bound_length: f32, bc: &BC) -> f32 {
 pub fn soft_boundary(pos: &Vec2, bound_length: f32, boundary_range: f32) -> Vec2 {
     let mut vec = Vec2::ZERO;
     if pos.x < boundary_range {
-        vec.x = 1.0+((pos.x*PI)/boundary_range).cos();
+        vec.x += 1.0+((pos.x*PI)/boundary_range).cos();
     } else if pos.x > bound_length - boundary_range {
-        vec.x = -1.0*(1.0+((PI/boundary_range)*(bound_length-pos.x)).cos());
+        vec.x += -1.0*(1.0+((PI/boundary_range)*(bound_length-pos.x)).cos());
     }
     if pos.y < boundary_range {
-        vec.y = 1.0+((pos.y*PI)/boundary_range).cos();
+        vec.y += 1.0+((pos.y*PI)/boundary_range).cos();
     } else if pos.y > bound_length - boundary_range {
-        vec.y = -1.0*(1.0+((PI/boundary_range)*(bound_length-pos.y)).cos());
+        vec.y += -1.0*(1.0+((PI/boundary_range)*(bound_length-pos.y)).cos());
     }
     vec
 }
@@ -324,7 +324,7 @@ impl Model {
             bound_length,
             scale: WINDOW_WIDTH / bound_length,
             vision_radius,
-            boundary_condition: BC::Periodic,
+            boundary_condition: BC::Soft(5.0),
         }
     }
 
@@ -779,7 +779,7 @@ impl Model {
                                                         self.bound_length,
                                                         &self.boundary_condition,
                                                     );
-                                                    if dist < 0.0 {
+                                                    if dist < 0.05 {
                                                         self.grid.cells[index_i as usize][index_j as usize]
                                                             .agent_indices
                                                             .remove(a_2_i);
