@@ -382,7 +382,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
             },
         }
 
-        canvas.draw(&self.gui, graphics::DrawParam::default().dest(Vec2::ZERO));
+        //canvas.draw(&self.gui, graphics::DrawParam::default().dest(Vec2::ZERO));
         canvas.finish(ctx)?;
 
         self.frames += 1;

@@ -16,7 +16,7 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    // test_model();
+     test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
@@ -52,7 +52,7 @@ fn test_model() {
         max_acceleration: 2.0,
         max_vel: 1.1,
         boundary: 20.0, //not in use
-        cooldown: 0.0,
+        cooldown: 0.5, 
     };
     let params = Parameters {
         // Model
@@ -60,7 +60,7 @@ fn test_model() {
         num_pred: 3,
         bound_length: 10.0,
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 60.0, 10.0),
+        times: Time::new(1.0 / 20.0, 200.0),
         prey_params,
         pred_params,
     };
