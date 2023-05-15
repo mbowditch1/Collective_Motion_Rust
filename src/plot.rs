@@ -24,6 +24,7 @@ pub fn write_to_file(path: String, values: Vec<Vec<f32>>) -> Result<(), Box<dyn 
 
     Ok(())
 }
+
 // Plot takes in an array of Models and outputs a CSV of data points for each time step
 // for each model? (or average)
 pub fn order(agents: &Vec<Agent>, time_step: usize) -> f32 {
@@ -103,6 +104,24 @@ pub fn plot_number_groups(model: &Model) {
     }
 }
 
+pub fn angular_velocity(model: &Model) {
+    let mut positions = Vec::new();
+    let mut velocities = Vec::new();
+    let mut times = Vec::new();
+    let num_steps = model.times.times.len();
+    for i in 0..num_steps {
+        for a in model.agents.iter() {
+            positions.push(a.positions[i].to_array().to_vec());
+            velocities.push(a.velocities[i].to_array().to_vec());
+            times.push(vec![model.times.times[i],model.times.times[i]]);
+        }
+    }
+    // let values = vec![&positions, &velocities, &times];
+    // if let Err(e) = write_to_file(String::from("./csv/angular_velocity.csv"), values) {
+    //     eprintln!("{}",e);
+    // }
+}
+
 pub fn final_prop_dead(model: &Model) -> f32 {
     let mut count: u32 = 0;
     for i in 0..model.num_prey {
@@ -133,6 +152,7 @@ pub fn plot_prey_alive(model: &Model) {
     let num_steps = model.times.times.len();
     let mut death_index: Vec<usize> = Vec::new();
     for i in 0..model.num_prey {
+        println!("{}",i);
         match model.agents[i].dead {
             State::Alive => (),
             State::Dead(index,_) => {
@@ -160,10 +180,10 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         plot_data.push((values[0][i] as f64, values[1][i] as f64));
     }
     let root = BitMapBackend::new("plotters-doc-data/0.png", (640, 480)).into_drawing_area();
-    let min_x = values[0][0];
-    let max_x = values[0].last().unwrap();
-    let min_y = values[1][0];
-    let max_y = values[1].last().unwrap();
+    let max_x = values[0][0];
+    let min_x = values[0].last().unwrap();
+    let max_y = values[1][0];
+    let min_y = values[1].last().unwrap();
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
         .caption("Total Velocity", ("sans-serif", 50).into_font())
@@ -171,7 +191,7 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
         .x_label_area_size(30)
         .y_label_area_size(30)
         // .build_cartesian_2d(min_x..*max_x, min_y..*max_y)?;
-        .build_cartesian_2d(0.0..10000.0, 0.0..200.0)?;
+        .build_cartesian_2d(0.0..100.0, 5000.0..4500.0)?;
 
     chart.configure_mesh().draw()?;
 
@@ -193,18 +213,35 @@ pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-pub fn output_positions(path: String, model: &Model) {
+pub fn output_pos_vel(path: String, model: &Model) {
     let num_steps = model.times.times.len();
     let mut values = vec![model.times.times.clone()];
     for a in model.agents.iter() {
-        let mut x_positions: Vec<f32> = Vec::new();
-        let mut y_positions: Vec<f32> = Vec::new();
-        for i in 0..num_steps {
-            x_positions.push(a.positions[i].x);
-            y_positions.push(a.positions[i].y);
+        match a.agent_type {
+            AgentType::Prey(..) => {
+                let mut x_positions: Vec<f32> = Vec::new();
+                let mut y_positions: Vec<f32> = Vec::new();
+                let mut x_velocities: Vec<f32> = Vec::new();
+                let mut y_velocities: Vec<f32> = Vec::new();
+                for i in 0..a.positions.len() {
+                    x_positions.push(a.positions[i].x.clone());
+                    y_positions.push(a.positions[i].y.clone());
+                    x_velocities.push(a.velocities[i].x.clone());
+                    y_velocities.push(a.velocities[i].y.clone());
+                    }
+                for i in 0..(num_steps-a.positions.len()) {
+                    x_positions.push(-10000.0);
+                    y_positions.push(-10000.0);
+                    x_velocities.push(-10000.0);
+                    y_velocities.push(-10000.0);
+                }
+                values.push(x_positions);
+                values.push(y_positions);
+                values.push(x_velocities);
+                values.push(y_velocities);
+            },
+            _ => (),
         }
-        values.push(x_positions);
-        values.push(y_positions);
     }
     if let Err(e) = write_to_file(path, values) {
         eprintln!("{}", e);
