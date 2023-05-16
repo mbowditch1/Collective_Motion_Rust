@@ -61,7 +61,7 @@ fn test_model() {
         num_pred: 3,
         bound_length: 10.0,
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 60.0, 10.0),
+        times: Time::new(1.0 / 20.0, 200.0),
         prey_params,
         pred_params,
     };
