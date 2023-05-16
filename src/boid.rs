@@ -64,14 +64,14 @@ impl PreyParams {
     pub fn new() -> PreyParams {
         PreyParams {
             current_direction: (0.0),
-            prey_attraction: (0.5),
-            prey_alignment: (1.0),
-            prey_repulsion: (0.25),
+            prey_attraction: (0.0),
+            prey_alignment: (0.0),
+            prey_repulsion: (0.0),
             predator_alignment: (0.0),
             predator_centering: (0.0),
-            predator_repulsion: (10.0),
+            predator_repulsion: (0.0),
             boundary: (20.0),
-            max_acceleration: 1.0,
+            max_acceleration: 2.0,
             max_vel: 1.0,
             vision_radius: 1.0,
         }
@@ -197,17 +197,17 @@ impl PredParams {
     pub fn new() -> PredParams {
         PredParams {
             current_direction: (0.0),
-            prey_attraction: (1.0),
+            prey_attraction: (0.0),
             prey_alignment: (0.0),
             nearest_prey: (0.0),
             predator_alignment: (0.0),
             predator_attraction: (0.0),
             predator_repulsion: (0.0),
-            boundary: (10.0),
-            max_acceleration: 0.8,
-            max_vel: 0.8,
-            vision_radius: 1.0,
-            cooldown: 0.0,
+            boundary: (20.0),
+            max_acceleration: 3.0,
+            max_vel: 1.0,
+            vision_radius: 2.0,
+            cooldown: 0.5,
         }
     }
 
@@ -399,7 +399,7 @@ impl Agent {
         let multiplier;
         match &agent_type {
             AgentType::Prey(..) => multiplier = 1.0,
-            AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown }, 
+            AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown },
         }
 
         let point_1 = Vec2::new(0.0, -(BOID_SIZE*multiplier) / 2.0);
@@ -437,6 +437,8 @@ impl Agent {
             AgentType::Predator(..) => {
                 let y: f32 = rand::thread_rng().gen_range(0.0..1.0/10.0) * b_length;
                 let x: f32 = rand::thread_rng().gen_range(0.0..1.0) * b_length;
+                // let y: f32 = 0.5*b_length;
+                // let x: f32 = 0.5*b_length;
                 Vec2::new(x, y)
             },
         };
@@ -453,7 +455,7 @@ impl Agent {
         let multiplier;
         match &agent_type {
             AgentType::Prey(..) => multiplier = 1.0,
-            AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown }, 
+            AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown },
         }
         let point_1 = Vec2::new(0.0, -(BOID_SIZE)*multiplier / 2.0);
         let point_2 = Vec2::new((BOID_SIZE)*multiplier / 4.0, (BOID_SIZE)*multiplier / 2.0);
@@ -499,7 +501,7 @@ impl Agent {
 
     pub fn reset_cooldown(&mut self) {
         match &self.agent_type {
-            AgentType::Predator(_, params) => self.kill_cooldown = params.cooldown, 
+            AgentType::Predator(_, params) => self.kill_cooldown = params.cooldown,
             _ => (),
         }
     }

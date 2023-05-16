@@ -6,6 +6,7 @@ use boids::parameter_search::*;
 use boids::testing::*;
 use ggez::glam::Vec2;
 use std::time::Instant;
+use cmaes::DVector;
 
 // TODO
 // FIX VISION RATIO
@@ -16,26 +17,26 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-     test_model();
+    test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
-    optimise_deaths2_pred();
     // test_death_positions();
+    // optimise_regime();
 }
 
 fn test_model() {
     let prey_params = PreyParams {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
-        prey_alignment: 2.7926018223248583,//11.66381925366485,
-        prey_attraction: 0.3812318014144567,//-2.598339198694632,
-        prey_repulsion: 0.16982504904959173,//8.98344680799392,
-        predator_alignment: -0.42798332230412983,//1.6121609117313664,
+        prey_alignment: 0.9582261937705074, //11.663819253664858,
+        prey_attraction: -0.0711222698745498, //-2.598339198694632,
+        prey_repulsion: 0.9824784427027915, //8.98344680799392,
+        predator_alignment: 0.6863455709757276, //1.6121609117313664,
         predator_centering: 0.0,
-        predator_repulsion: 1.5078236609330973,//8.438545382876004,
+        predator_repulsion: 0.7396519317096918, //8.438545382876004,
         max_acceleration: 2.0,
         max_vel: 1.0,
         boundary: 20.0, // not in use
@@ -44,15 +45,15 @@ fn test_model() {
         vision_radius: 2.0,
         current_direction: 0.0, // not in use
         prey_alignment: 0.0,
-        prey_attraction: 4.1190977653920715,
+        prey_attraction: 1.1813,
         nearest_prey: 0.0, // not in use
-        predator_alignment: 12.80190134440911,
-        predator_attraction: 4.30243976751066,
-        predator_repulsion: 1.7507335570055953,
+        predator_alignment: 0.5662,
+        predator_attraction: 0.1217,
+        predator_repulsion: 0.0315,
         max_acceleration: 2.0,
-        max_vel: 1.1,
+        max_vel: 1.2,
         boundary: 20.0, //not in use
-        cooldown: 0.5, 
+        cooldown: 0.5,
     };
     let params = Parameters {
         // Model
