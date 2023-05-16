@@ -4,6 +4,9 @@ use crate::model::{Model, Parameters, Time, BC};
 use crate::plot::*;
 use ndarray::prelude::*;
 use std::time::Duration;
+use serde::{Serialize};
+use std::fs::File;
+use std::io::Write;
 
 use cmaes::{CMAESOptions, DVector, PlotOptions, restart};
 
@@ -247,33 +250,45 @@ pub fn optimise_regime() {
     let regimes: Vec<Vec<f32>> = vec![vec![2.0,1.0], vec![3.0,1.25], vec![1.0, 0.75]];
     let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0], vec![20.0,12.0], vec![30.0,27.0]];
     for physical_params in regimes.iter() {
-        let mut output = Result::new();
         for space_params in scenarios.iter() {
-            // prey optimisation
-            let result = optimise_deaths_prey(
-                &output.pred_behaviour_params.last().unwrap(),
-                &physical_params,
-                &space_params
-            );
-            output.prey_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>().clone());
-            output.final_predation.push(result.1);
-            println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
-                output.pred_behaviour_params, output.final_predation);
+            let mut output = Result::new();
+            for i in 0..1 {
+                // prey optimisation
+                let result = optimise_deaths_prey(
+                    &output.pred_behaviour_params.last().unwrap(),
+                    &physical_params,
+                    &space_params
+                );
+                output.prey_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>().clone());
+                output.final_predation.push(result.1);
+                println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
+                    output.pred_behaviour_params, output.final_predation);
 
-            // predator optimisation
-            let result = optimise_deaths_pred(
-                &output.prey_behaviour_params.last().unwrap(),
-                &physical_params,
-                &space_params
-            );
-            output.pred_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>());
-            output.final_predation.push(result.1);
-            println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
-                output.pred_behaviour_params, output.final_predation);
+                // predator optimisation
+                let result = optimise_deaths_pred(
+                    &output.prey_behaviour_params.last().unwrap(),
+                    &physical_params,
+                    &space_params
+                );
+                output.pred_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>());
+                output.final_predation.push(result.1);
+                println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
+                    output.pred_behaviour_params, output.final_predation);
+            }
+            // create file for results
+            let mut file = File::create(
+                String::from("results_") +
+                &physical_params[0].to_string() +
+                &space_params[0].to_string() +
+                &".json".to_string()
+            ).expect("Failed to create file");
+            let serialized = serde_json::to_string(&output).expect("Failed to serialize to JSON");
+            file.write_all(serialized.as_bytes()).expect("Failed to write to file");
         }
     }
 }
 
+#[derive(Serialize)]
 pub struct Result {
     prey_behaviour_params: Vec<Vec<f64>>,
     pred_behaviour_params: Vec<Vec<f64>>,

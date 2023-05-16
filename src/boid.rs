@@ -437,6 +437,8 @@ impl Agent {
             AgentType::Predator(..) => {
                 let y: f32 = rand::thread_rng().gen_range(0.0..1.0/10.0) * b_length;
                 let x: f32 = rand::thread_rng().gen_range(0.0..1.0) * b_length;
+                // let y: f32 = 0.5*b_length;
+                // let x: f32 = 0.5*b_length;
                 Vec2::new(x, y)
             },
         };

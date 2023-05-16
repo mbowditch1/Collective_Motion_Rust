@@ -17,14 +17,14 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    // test_model();
+    test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
     // test_death_positions();
-    optimise_regime();
+    // optimise_regime();
 }
 
 fn test_model() {
@@ -45,13 +45,13 @@ fn test_model() {
         vision_radius: 2.0,
         current_direction: 0.0, // not in use
         prey_alignment: 0.0,
-        prey_attraction: 0.1813,
+        prey_attraction: 1.1813,
         nearest_prey: 0.0, // not in use
         predator_alignment: 0.5662,
         predator_attraction: 0.1217,
         predator_repulsion: 0.0315,
         max_acceleration: 2.0,
-        max_vel: 1.0,
+        max_vel: 1.2,
         boundary: 20.0, //not in use
         cooldown: 0.5,
     };
