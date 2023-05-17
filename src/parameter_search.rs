@@ -255,16 +255,6 @@ pub fn optimise_regime() {
         for space_params in scenarios.iter() {
             let mut output = Result::new();
             for i in 0..4 {
-                // prey optimisation
-                let result = optimise_deaths_prey(
-                    &output.pred_behaviour_params.last().unwrap(),
-                    &physical_params,
-                    &space_params
-                );
-                output.prey_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>().clone());
-                output.final_predation.push(result.1);
-                println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
-                    output.pred_behaviour_params, output.final_predation);
 
                 // predator optimisation
                 let result = optimise_deaths_pred(
@@ -273,6 +263,17 @@ pub fn optimise_regime() {
                     &space_params
                 );
                 output.pred_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>());
+                output.final_predation.push(result.1);
+                println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
+                    output.pred_behaviour_params, output.final_predation);
+
+                // prey optimisation
+                let result = optimise_deaths_prey(
+                    &output.pred_behaviour_params.last().unwrap(),
+                    &physical_params,
+                    &space_params
+                );
+                output.prey_behaviour_params.push(result.0.iter().copied().collect::<Vec<f64>>().clone());
                 output.final_predation.push(result.1);
                 println!("{:?}, {:?}, {:?}", output.prey_behaviour_params,
                     output.pred_behaviour_params, output.final_predation);
