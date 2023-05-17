@@ -210,8 +210,8 @@ pub fn optimise_deaths_prey(behaviour_params: &Vec<f64>, physical_params: &Vec<f
     let strategy = restart::RestartStrategy::BIPOP(Default::default());
     let restarter = restart::RestartOptions::new(dim, -1.0..=1.0, strategy)
         .enable_printing(true)
-        .max_generations_per_run(1)
-        .max_function_evals(1)
+        .max_generations_per_run(10)
+        .max_function_evals(750)
         .build()
         .unwrap();
 
@@ -231,8 +231,8 @@ pub fn optimise_deaths_pred(behaviour_params: &Vec<f64>, physical_params: &Vec<f
     let strategy = restart::RestartStrategy::BIPOP(Default::default());
     let restarter = restart::RestartOptions::new(dim, -1.0..=1.0, strategy)
         .enable_printing(true)
-        .max_generations_per_run(1)
-        .max_function_evals(1)
+        .max_generations_per_run(10)
+        .max_function_evals(750)
         .build()
         .unwrap();
 
@@ -252,7 +252,7 @@ pub fn optimise_regime() {
     for physical_params in regimes.iter() {
         for space_params in scenarios.iter() {
             let mut output = Result::new();
-            for i in 0..1 {
+            for i in 0..4 {
                 // prey optimisation
                 let result = optimise_deaths_prey(
                     &output.pred_behaviour_params.last().unwrap(),
