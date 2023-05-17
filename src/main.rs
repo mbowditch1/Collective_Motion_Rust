@@ -17,14 +17,14 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    test_model();
+    // test_model();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
     // test_death_positions();
-    // optimise_regime();
+    optimise_regime();
 }
 
 fn test_model() {
