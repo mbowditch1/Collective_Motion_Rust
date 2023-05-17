@@ -1,10 +1,9 @@
 use boids::boid::{PredParams, PreyParams};
-use boids::graphics;
 use boids::model::{Model, Parameters, Time, BC};
 use boids::plot::*;
 use boids::parameter_search::*;
 use boids::testing::*;
-use ggez::glam::Vec2;
+use glam::Vec2;
 use std::time::Instant;
 use cmaes::DVector;
 
@@ -72,7 +71,6 @@ fn test_model() {
     // let path = String::from("./csv/positions_10_pred.csv");
     // output_positions(path, &model);
     // graphics::start_game();
-    graphics::start_game_from_parameters(&params);
     // death_distribution(params, 30, true);
     // output_pos_vel(String::from("./csv/angular_velocity_pos.csv"), &model);
 }
@@ -115,7 +113,6 @@ fn diagram_generator() {
         prey_params,
         pred_params,
     };
-    graphics::start_game_from_parameters(&params);
 }
 
 fn test_plots() {

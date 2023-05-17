@@ -1,9 +1,6 @@
 use crate::boid::{Agent, AgentType, PredParams, PreyParams, State};
-use crate::graphics::{GUIParameters, CREAM, LRED};
-use crate::graphics::{PlayState, BOID_SIZE, DT, WINDOW_HEIGHT, WINDOW_WIDTH};
 use crate::grid::Grid;
-use ggez::glam::Vec2;
-use ggez::{graphics, Context};
+use glam::Vec2;
 use rand::Rng;
 use rand_distr::{Distribution, Normal, NormalError};
 use std::f32::consts::PI;
@@ -178,9 +175,9 @@ impl Model {
             agents,
             vision_radius,
             grid,
-            times: Time::new(DT, 50.0),
+            times: Time::new(1.0/60.0, 50.0),
             bound_length,
-            scale: WINDOW_WIDTH / bound_length,
+            scale: 1.0,
             vision_ratio,
             boundary_condition: BC::Soft(0.5),
         }
@@ -226,192 +223,9 @@ impl Model {
             grid,
             times,
             bound_length,
-            scale: WINDOW_WIDTH / bound_length,
+            scale: 1.0,
             vision_ratio,
             boundary_condition,
-        }
-    }
-
-    pub fn graphical_from(ctx: &mut Context, parameters: &Parameters) -> Model {
-        let num_prey = parameters.num_prey;
-        let num_pred = parameters.num_pred;
-        let bound_length = parameters.bound_length;
-        let vision_radius = parameters.prey_params.vision_radius;
-        let times = parameters.times.clone();
-        let boundary_condition = parameters.boundary_condition.clone();
-        let mut agents = Vec::new();
-
-        // Create agents
-        let mut grid = Grid::new(vision_radius, bound_length);
-        for a in 0..num_prey {
-            let agent = Agent::new_graphical(
-                ctx,
-                bound_length,
-                AgentType::prey_from_params(parameters.prey_params.clone()),
-            );
-            grid.push_agent(&agent.positions[0], a);
-            agents.push(agent);
-        }
-
-        for a in num_prey..num_prey + num_pred {
-            let agent = Agent::new_graphical(
-                ctx,
-                bound_length,
-                AgentType::pred_from_params(parameters.pred_params.clone()),
-            );
-            grid.push_agent(&agent.positions[0], a);
-            agents.push(agent);
-        }
-
-        let vision_ratio: usize = (parameters.pred_params.vision_radius
-            / parameters.prey_params.vision_radius)
-            .ceil() as usize;
-        Model {
-            num_prey,
-            num_pred,
-            agents,
-            vision_radius,
-            grid,
-            times,
-            bound_length,
-            scale: WINDOW_WIDTH / bound_length,
-            vision_ratio,
-            boundary_condition,
-        }
-    }
-
-    pub fn new_graphical(ctx: &mut Context) -> Model {
-        // DEFAULTS
-        let bound_length = 10.0;
-        let num_prey = 100;
-        let vision_radius: f32 = 1.0;
-        let mut agents = Vec::new();
-
-        // Create grid and assign agents
-        let mut grid = Grid::new(vision_radius, bound_length);
-        for a in 0..num_prey {
-            let agent = Agent::new_graphical(ctx, bound_length, AgentType::new_prey());
-            grid.push_agent(&agent.positions[0], a);
-            agents.push(agent);
-        }
-
-        let num_pred = 0;
-        for a in num_prey..num_prey + num_pred {
-            let agent = Agent::new_graphical(ctx, bound_length, AgentType::new_predator());
-            grid.push_agent(&agent.positions[0], a);
-            agents.push(agent);
-        }
-
-        let mut vision_ratio: usize = 1;
-        if num_pred > 0 {
-            if let AgentType::Predator(_, pred_params) = &agents[num_prey].agent_type {
-                if let AgentType::Prey(_, prey_params) = &agents[0].agent_type {
-                    vision_ratio =
-                        (pred_params.vision_radius / prey_params.vision_radius).ceil() as usize;
-                }
-            }
-        } else {
-            vision_ratio = 1;
-        }
-
-        Model {
-            num_prey,
-            num_pred,
-            agents,
-            vision_ratio,
-            grid,
-            times: Time::new(DT, 50.0),
-            bound_length,
-            scale: WINDOW_WIDTH / bound_length,
-            vision_radius,
-            boundary_condition: BC::Soft(5.0),
-        }
-    }
-
-    pub fn from_parameters(ctx: &mut Context, parameters: &mut GUIParameters) -> Model {
-        // DEFAULTS
-        let bound_length: f32;
-        let vision_radius: f32;
-        let num_prey;
-        let num_pred;
-        match parameters.bound_length.parse::<f32>() {
-            Ok(bl) => bound_length = bl,
-            Err(_E) => {
-                println!("Please enter a valid bound_length. Setting to default");
-                bound_length = 10.0;
-                parameters.bound_length = 10.0.to_string();
-            }
-        }
-        match parameters.prey_params.vision_radius.parse::<f32>() {
-            Ok(vr) => vision_radius = vr,
-            Err(_E) => {
-                println!("Please enter a valid vision radius. Setting to default");
-                vision_radius = 1.0;
-                parameters.prey_params.vision_radius = 1.to_string();
-            }
-        }
-        match parameters.num_prey.parse::<usize>() {
-            Ok(vr) => num_prey = vr,
-            Err(_E) => {
-                println!("Please enter a valid vision radius. Setting to default");
-                num_prey = 100;
-                parameters.num_prey = 100.to_string();
-            }
-        }
-        match parameters.num_pred.parse::<usize>() {
-            Ok(vr) => num_pred = vr,
-            Err(_E) => {
-                println!("Please enter a valid vision radius. Setting to default");
-                num_pred = 0;
-                parameters.num_pred = 0.to_string();
-            }
-        }
-        let mut agents = Vec::new();
-
-        // Create grid and assign agents
-        let mut grid = Grid::new(vision_radius, bound_length);
-        for a in 0..num_prey {
-            let agent = Agent::new_graphical(
-                ctx,
-                bound_length,
-                AgentType::prey_from_params(PreyParams::from_params(&mut parameters.prey_params)),
-            );
-            grid.push_agent(&agent.positions[0], a);
-            agents.push(agent);
-        }
-        for a in num_prey..num_prey + num_pred {
-            let agent = Agent::new_graphical(
-                ctx,
-                bound_length,
-                AgentType::pred_from_params(PredParams::from_params(&mut parameters.pred_params)),
-            );
-            grid.push_agent(&agent.positions[0], a);
-            agents.push(agent);
-        }
-
-        let mut vision_ratio: usize = 1;
-        if num_pred > 0 {
-            if let AgentType::Predator(_, pred_params) = &agents[num_prey].agent_type {
-                if let AgentType::Prey(_, prey_params) = &agents[0].agent_type {
-                    vision_ratio =
-                        (pred_params.vision_radius / prey_params.vision_radius).ceil() as usize;
-                }
-            }
-        } else {
-            vision_ratio = 1;
-        }
-
-        Model {
-            num_prey,
-            num_pred,
-            agents,
-            grid,
-            times: Time::new(DT, 50.0),
-            bound_length,
-            scale: WINDOW_WIDTH / bound_length,
-            vision_radius,
-            vision_ratio,
-            boundary_condition: BC::Periodic,
         }
     }
 
@@ -808,61 +622,5 @@ impl Model {
             }
         }
         self.times.inc_time();
-    }
-    // Draw model for current time step
-    pub fn draw(
-        &mut self,
-        ctx: &mut Context,
-        canvas: &mut graphics::Canvas,
-        disco_mode: &PlayState,
-    ) {
-        for a_index in 0..self.agents.len() {
-            let new_colour;
-            match self.agents[a_index].agent_type {
-                AgentType::Prey(_, _) => new_colour = CREAM,
-                AgentType::Predator(_, _) => new_colour = CREAM,
-            }
-            self.agents[a_index].agent_type = (self.agents[a_index].agent_type)
-                .clone()
-                .change_colour(new_colour);
-            self.agents[a_index].draw(ctx, canvas, self.scale, &disco_mode, 0, 1.0);
-        }
-    }
-
-    pub fn draw_trail(
-        &mut self,
-        ctx: &mut Context,
-        canvas: &mut graphics::Canvas,
-        disco_mode: &PlayState,
-    ) {
-        if self.agents[0].positions.len() <= 500 {
-            self.draw(ctx, canvas, disco_mode);
-            return;
-        }
-        //let transparent = [
-        //    1.0, 0.2, 0.19, 0.18, 7, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11,
-        //];
-        let transparent = [
-            1.0, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.10, 0.05,
-        ];
-       //let transparent = [
-        //    1.0, 0.5, 0.45, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        //];
-        for a_index in 0..self.agents.len() {
-            for i in 0 as usize..10 as usize {
-                let offset = i * 40;
-                let mut new_colour;
-                match self.agents[a_index].agent_type {
-                    AgentType::Prey(_, _) => new_colour = CREAM,
-                    AgentType::Predator(_, _) => new_colour = LRED,
-                }
-                // Add predator colours
-                new_colour[3] = transparent[i];
-                self.agents[a_index].agent_type = (self.agents[a_index].agent_type)
-                    .clone()
-                    .change_colour(new_colour);
-                self.agents[a_index].draw(ctx, canvas, self.scale, &disco_mode, offset, transparent[i]);
-            }
-        }
     }
 }

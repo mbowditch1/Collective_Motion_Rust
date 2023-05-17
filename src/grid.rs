@@ -1,5 +1,5 @@
 use crate::boid::Agent;
-use ggez::glam::Vec2;
+use glam::Vec2;
 
 pub struct Cell {
     pub ymin: f32,

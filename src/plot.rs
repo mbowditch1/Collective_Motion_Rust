@@ -1,8 +1,7 @@
 use plotters::prelude::*;
 use crate::boid::{Agent, AgentType, PreyParams,State, PredParams};
-use crate::graphics::CREAM;
 use crate::model::{Model, Parameters,BC,Time};
-use ggez::glam::Vec2;
+use glam::Vec2;
 use std::error::Error;
 use dbscan::Classification::*;
 use dbscan;
