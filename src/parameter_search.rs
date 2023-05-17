@@ -247,7 +247,9 @@ pub fn optimise_deaths_pred(behaviour_params: &Vec<f64>, physical_params: &Vec<f
 }
 
 pub fn optimise_regime() {
-    let regimes: Vec<Vec<f32>> = vec![vec![2.0,1.0], vec![3.0,1.25], vec![1.0, 0.75]];
+    //let regimes: Vec<Vec<f32>> = vec![vec![2.0,1.0], vec![3.0,1.25], vec![1.0, 0.75]];
+    //let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0], vec![20.0,12.0], vec![30.0,27.0]];
+    let regimes: Vec<Vec<f32>> = vec![vec![3.0,1.25]];
     let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0], vec![20.0,12.0], vec![30.0,27.0]];
     for physical_params in regimes.iter() {
         for space_params in scenarios.iter() {
