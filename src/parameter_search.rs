@@ -249,8 +249,8 @@ pub fn optimise_deaths_pred(behaviour_params: &Vec<f64>, physical_params: &Vec<f
 pub fn optimise_regime() {
     //let regimes: Vec<Vec<f32>> = vec![vec![2.0,1.0], vec![3.0,1.25], vec![1.0, 0.75]];
     //let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0], vec![20.0,12.0], vec![30.0,27.0]];
-    let regimes: Vec<Vec<f32>> = vec![vec![2.0,1.0]];
-    let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0], vec![20.0,12.0], vec![30.0,27.0]];
+    let regimes: Vec<Vec<f32>> = vec![vec![3.0,1.25]];
+    let scenarios: Vec<Vec<f32>> = vec![vec![10.0,3.0]];
     for physical_params in regimes.iter() {
         for space_params in scenarios.iter() {
             let mut output = Result::new();
@@ -301,8 +301,19 @@ pub struct Result {
 impl Result {
     pub fn new() -> Result {
         Result {
-            prey_behaviour_params: vec![vec![0.0;5]],
-            pred_behaviour_params: vec![vec![0.0;4]],
+            prey_behaviour_params: vec![vec![
+                0.7819851861238426,
+                0.5919276983560471,
+                0.009325830632429137,
+                0.9339229930527418,
+                0.3184618368371408
+            ]],
+            pred_behaviour_params: vec![vec![ 
+                0.5712478036605189,
+                0.8105732636854641,
+                0.07604532354850974,
+                0.1699521051796788
+            ]],
             final_predation: Vec::new(),
         }
     }
