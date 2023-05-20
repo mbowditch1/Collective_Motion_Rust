@@ -254,7 +254,7 @@ pub fn optimise_regime() {
     for physical_params in regimes.iter() {
         for space_params in scenarios.iter() {
             let mut output = Result::new();
-            for i in 0..4 {
+            for i in 0..8 {
 
                 // predator optimisation
                 let result = optimise_deaths_pred(
@@ -283,7 +283,7 @@ pub fn optimise_regime() {
                 String::from("results_") +
                 &physical_params[0].to_string() +
                 &space_params[0].to_string() +
-                &".json".to_string()
+                &"_continued.json".to_string()
             ).expect("Failed to create file");
             let serialized = serde_json::to_string(&output).expect("Failed to serialize to JSON");
             file.write_all(serialized.as_bytes()).expect("Failed to write to file");
@@ -301,9 +301,9 @@ pub struct Result {
 impl Result {
     pub fn new() -> Result {
         Result {
-            prey_behaviour_params: vec![vec![0.0;5]],
-            pred_behaviour_params: vec![vec![0.0;4]],
+            prey_behaviour_params: vec![vec![0.5434912795008783,0.45878835898103876,0.8278511998969669,0.9798594801830436,0.5941599573121543]],
+            pred_behaviour_params: vec![vec![0.9743652540276795,-0.20327822862488437,-0.22612876961363704,-0.4092613999611435]],
             final_predation: Vec::new(),
-        }
     }
+}
 }

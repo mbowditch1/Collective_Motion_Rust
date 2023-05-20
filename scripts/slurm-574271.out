@@ -1,0 +1,476 @@
+Restoring modules from user's rust
+   Compiling boids v0.1.0 (/gpfs/home/rawsys/matsnn/Collective_Motion_Rust)
+warning: unused import: `Mat2`
+ --> src/boid.rs:2:12
+  |
+2 | use glam::{Mat2, Vec2};
+  |            ^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `NormalError`
+ --> src/boid.rs:4:40
+  |
+4 | use rand_distr::{Distribution, Normal, NormalError};
+  |                                        ^^^^^^^^^^^
+
+warning: unused import: `crate::boid::Agent`
+ --> src/grid.rs:1:5
+  |
+1 | use crate::boid::Agent;
+  |     ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `NormalError`
+ --> src/model.rs:5:40
+  |
+5 | use rand_distr::{Distribution, Normal, NormalError};
+  |                                        ^^^^^^^^^^^
+
+warning: unused import: `dbscan::Classification::*`
+ --> src/plot.rs:6:5
+  |
+6 | use dbscan::Classification::*;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AgentType`, `Agent`, `PreyParams`
+ --> src/testing.rs:1:19
+  |
+1 | use crate::boid::{Agent, AgentType, PreyParams};
+  |                   ^^^^^  ^^^^^^^^^  ^^^^^^^^^^
+
+warning: unused import: `glam::Vec2`
+ --> src/testing.rs:4:5
+  |
+4 | use glam::Vec2;
+  |     ^^^^^^^^^^
+
+warning: unused import: `std::error::Error`
+ --> src/testing.rs:5:5
+  |
+5 | use std::error::Error;
+  |     ^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Minimizer`, `NelderMeadBuilder`
+ --> src/parameter_search.rs:1:16
+  |
+1 | use optimize::{Minimizer, NelderMeadBuilder};
+  |                ^^^^^^^^^  ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ndarray::prelude::*`
+ --> src/parameter_search.rs:5:5
+  |
+5 | use ndarray::prelude::*;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::time::Duration`
+ --> src/parameter_search.rs:6:5
+  |
+6 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `CMAESOptions`, `PlotOptions`
+  --> src/parameter_search.rs:11:13
+   |
+11 | use cmaes::{CMAESOptions, DVector, PlotOptions, restart};
+   |             ^^^^^^^^^^^^           ^^^^^^^^^^^
+
+warning: unused import: `rand::Rng`
+ --> src/model.rs:4:5
+  |
+4 | use rand::Rng;
+  |     ^^^^^^^^^
+
+warning: variable `multiplier` is assigned to, but never used
+   --> src/boid.rs:164:13
+    |
+164 |         let multiplier;
+    |             ^^^^^^^^^^
+    |
+    = note: consider using `_multiplier` instead
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: value assigned to `multiplier` is never read
+   --> src/boid.rs:166:36
+    |
+166 |             AgentType::Prey(..) => multiplier = 1.0,
+    |                                    ^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+    = note: `#[warn(unused_assignments)]` on by default
+
+warning: value assigned to `multiplier` is never read
+   --> src/boid.rs:167:49
+    |
+167 |             AgentType::Predator(_, params) => { multiplier = 1.5; kill_cooldown = params.cooldown },
+    |                                                 ^^^^^^^^^^
+    |
+    = help: maybe it is overwritten before being read?
+
+warning: unused variable: `last_pos`
+   --> src/boid.rs:170:13
+    |
+170 |         let last_pos = a_vec.clone();
+    |             ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_last_pos`
+
+warning: unused variable: `chase_vel`
+   --> src/model.rs:399:37
+    |
+399 | ...                   let mut chase_vel = Vec2::ZERO;
+    |                               ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_chase_vel`
+
+warning: unused variable: `min_dist`
+   --> src/model.rs:405:37
+    |
+405 | ...                   let mut min_dist = self.bound_length;
+    |                               ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_min_dist`
+
+warning: unused variable: `params`
+   --> src/model.rs:566:48
+    |
+566 |                         AgentType::Predator(_, params) => {
+    |                                                ^^^^^^ help: if this is intentional, prefix it with an underscore: `_params`
+
+warning: unused variable: `values`
+  --> src/plot.rs:47:9
+   |
+47 |     let values = vec![&model.times.times,  &order_vec];
+   |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_values`
+
+warning: unused variable: `path`
+  --> src/plot.rs:41:19
+   |
+41 | pub fn order_plot(path: String, model: &Model) {
+   |                   ^^^^ help: if this is intentional, prefix it with an underscore: `_path`
+
+warning: unused variable: `index`
+   --> src/plot.rs:129:25
+    |
+129 |             State::Dead(index,_) => {
+    |                         ^^^^^ help: if this is intentional, prefix it with an underscore: `_index`
+
+warning: unused variable: `max_x`
+   --> src/plot.rs:182:9
+    |
+182 |     let max_x = values[0][0];
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_max_x`
+
+warning: unused variable: `min_x`
+   --> src/plot.rs:183:9
+    |
+183 |     let min_x = values[0].last().unwrap();
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_min_x`
+
+warning: unused variable: `max_y`
+   --> src/plot.rs:184:9
+    |
+184 |     let max_y = values[1][0];
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_max_y`
+
+warning: unused variable: `min_y`
+   --> src/plot.rs:185:9
+    |
+185 |     let min_y = values[1].last().unwrap();
+    |         ^^^^^ help: if this is intentional, prefix it with an underscore: `_min_y`
+
+warning: unused variable: `path`
+   --> src/plot.rs:175:18
+    |
+175 | pub fn plot_test(path: &str, values: &Vec<&Vec<f32>>) -> Result<(), Box<dyn std::error::Error>> {
+    |                  ^^^^ help: if this is intentional, prefix it with an underscore: `_path`
+
+warning: unused variable: `i`
+   --> src/plot.rs:231:21
+    |
+231 |                 for i in 0..(num_steps-a.positions.len()) {
+    |                     ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: unused variable: `i`
+ --> src/testing.rs:9:9
+  |
+9 |     for i in 0..n {
+  |         ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: unused variable: `min_index`
+  --> src/testing.rs:35:17
+   |
+35 |             let min_index = i;
+   |                 ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_min_index`
+
+warning: unused variable: `i`
+   --> src/parameter_search.rs:257:17
+    |
+257 |             for i in 0..8 {
+    |                 ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: variable does not need to be mutable
+   --> src/boid.rs:143:13
+    |
+143 |         let mut a_vec = match agent_type {
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/model.rs:399:33
+    |
+399 | ...                   let mut chase_vel = Vec2::ZERO;
+    |                           ----^^^^^^^^^
+    |                           |
+    |                           help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src/model.rs:405:33
+    |
+405 | ...                   let mut min_dist = self.bound_length;
+    |                           ----^^^^^^^^
+    |                           |
+    |                           help: remove this `mut`
+
+warning: variable does not need to be mutable
+  --> src/testing.rs:31:9
+   |
+31 |     let mut min: f32 = 1.0;
+   |         ----^^^
+   |         |
+   |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+  --> src/testing.rs:32:9
+   |
+32 |     let mut min_index: usize = 0;
+   |         ----^^^^^^^^^
+   |         |
+   |         help: remove this `mut`
+
+warning: field `r_hat` is never read
+ --> src/grid.rs:9:5
+  |
+4 | pub struct Cell {
+  |            ---- field in this struct
+...
+9 |     r_hat: f32,
+  |     ^^^^^
+  |
+  = note: `#[warn(dead_code)]` on by default
+
+warning: fields `num_pred` and `scale` are never read
+   --> src/model.rs:123:5
+    |
+121 | pub struct Model {
+    |            ----- fields in this struct
+122 |     pub num_prey: usize,
+123 |     num_pred: usize,
+    |     ^^^^^^^^
+...
+128 |     scale: f32,
+    |     ^^^^^
+
+warning: function `test_abc` is never used
+ --> src/testing.rs:7:4
+  |
+7 | fn test_abc(n: usize, eps: f32, max_time: f32) {
+  |    ^^^^^^^^
+
+warning: variable `F_j` should have a snake case name
+   --> src/model.rs:377:37
+    |
+377 | ...                   let mut F_j = params.prey_alignment * align_vel
+    |                               ^^^ help: convert the identifier to snake case (notice the capitalization): `f_j`
+    |
+    = note: `#[warn(non_snake_case)]` on by default
+
+warning: variable `F_length` should have a snake case name
+   --> src/model.rs:382:33
+    |
+382 | ...                   let F_length = F_j.length();
+    |                           ^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `f_length`
+
+warning: variable `F_length` should have a snake case name
+   --> src/model.rs:389:33
+    |
+389 | ...                   let F_length = F_j.length();
+    |                           ^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `f_length`
+
+warning: variable `F_j` should have a snake case name
+   --> src/model.rs:494:37
+    |
+494 | ...                   let mut F_j = params.prey_attraction * prey_attraction
+    |                               ^^^ help: convert the identifier to snake case (notice the capitalization): `f_j`
+
+warning: variable `F_length` should have a snake case name
+   --> src/model.rs:497:33
+    |
+497 | ...                   let F_length = F_j.length();
+    |                           ^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `f_length`
+
+warning: variable `F_length` should have a snake case name
+   --> src/model.rs:504:33
+    |
+504 | ...                   let F_length = F_j.length();
+    |                           ^^^^^^^^ help: convert the identifier to snake case (notice the capitalization): `f_length`
+
+warning: variable `F_j` should have a snake case name
+   --> src/model.rs:257:25
+    |
+257 |                     let F_j = match &self.agents[a_1_index].agent_type {
+    |                         ^^^ help: convert the identifier to snake case (notice the capitalization): `f_j`
+
+warning: variable `N` should have a snake case name
+  --> src/plot.rs:37:9
+   |
+37 |     let N = agents.len() as f32;
+   |         ^ help: convert the identifier to snake case: `n`
+
+warning: variable `N` should have a snake case name
+  --> src/plot.rs:58:9
+   |
+58 |     let N = agents.len() as f32;
+   |         ^ help: convert the identifier to snake case: `n`
+
+warning: `boids` (lib) generated 49 warnings (run `cargo fix --lib -p boids` to apply 33 suggestions)
+warning: unused import: `boids::testing::*`
+ --> src/main.rs:5:5
+  |
+5 | use boids::testing::*;
+  |     ^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `glam::Vec2`
+ --> src/main.rs:6:5
+  |
+6 | use glam::Vec2;
+  |     ^^^^^^^^^^
+
+warning: unused import: `cmaes::DVector`
+ --> src/main.rs:8:5
+  |
+8 | use cmaes::DVector;
+  |     ^^^^^^^^^^^^^^
+
+warning: unused variable: `params`
+   --> src/main.rs:106:9
+    |
+106 |     let params = Parameters {
+    |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_params`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `i`
+   --> src/main.rs:243:9
+    |
+243 |     for i in 0..100 {
+    |         ^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: variable does not need to be mutable
+   --> src/main.rs:167:9
+    |
+167 |     let mut times = Time::new(1.0 / 60.0, 50.0);
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: variable does not need to be mutable
+   --> src/main.rs:175:9
+    |
+175 |     let mut times = Time::new(1.0 / 60.0, 50.0);
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src/main.rs:183:9
+    |
+183 |     let mut times = Time::new(1.0 / 60.0, 10000.0);
+    |         ----^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src/main.rs:231:13
+    |
+231 |         let mut times = Time::new(1.0 / 60.0, 300.0);
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: variable does not need to be mutable
+   --> src/main.rs:245:13
+    |
+245 |         let mut times = Time::new(1.0 / 60.0, 50.0);
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: function `estimated_running_time` is never used
+  --> src/main.rs:13:4
+   |
+13 | fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
+   |    ^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: function `test_model` is never used
+  --> src/main.rs:29:4
+   |
+29 | fn test_model() {
+   |    ^^^^^^^^^^
+
+warning: function `diagram_generator` is never used
+  --> src/main.rs:78:4
+   |
+78 | fn diagram_generator() {
+   |    ^^^^^^^^^^^^^^^^^
+
+warning: function `test_plots` is never used
+   --> src/main.rs:118:4
+    |
+118 | fn test_plots() {
+    |    ^^^^^^^^^^
+
+warning: function `test_avg_vel` is never used
+   --> src/main.rs:165:4
+    |
+165 | fn test_avg_vel() {
+    |    ^^^^^^^^^^^^
+
+warning: function `test_num_groups` is never used
+   --> src/main.rs:173:4
+    |
+173 | fn test_num_groups() {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `test_prey_alive` is never used
+   --> src/main.rs:181:4
+    |
+181 | fn test_prey_alive() {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `test_death_positions` is never used
+   --> src/main.rs:189:4
+    |
+189 | fn test_death_positions() {
+    |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `run_test` is never used
+   --> src/main.rs:241:4
+    |
+241 | fn run_test() {
+    |    ^^^^^^^^
+
+error: linking with `cc` failed: exit status: 1
+  |
+  = note: LC_ALL="C" PATH="/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/share/lmod/lmod/libexec:/home/rawsys/matsnn/.cargo/bin:/home/rawsys/matsnn/.local/bin:/home/rawsys/matsnn/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/usr/lpp/mmfs/bin" VSLANG="1033" "cc" "-m64" "/tmp/rustcynjdlT/symbols.o" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/boids-891b9364d7cd76d8.boids.baaaab29-cgu.0.rcgu.o" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/boids-891b9364d7cd76d8.boids.baaaab29-cgu.1.rcgu.o" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/boids-891b9364d7cd76d8.boids.baaaab29-cgu.2.rcgu.o" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/boids-891b9364d7cd76d8.2hp63eaj7rgkwgzz.rcgu.o" "-Wl,--as-needed" "-L" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps" "-L" "/usr/lib64" "-L" "/usr/lib64" "-L" "/usr/lib64" "-L" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libboids-85ce4638b1beef4c.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libserde_json-5c5d32a26e12339d.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcsv-aa96ae93ee0021f7.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libryu-012f72ba7a4f8835.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libitoa-8789dce553754b4c.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcsv_core-1a9c469264f65b7d.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libmemchr-25cd57eaec050250.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcmaes-816f068d11f032b4.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libstatrs-507d3a6b833ba3b5.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnalgebra-4a92c420a64aaa9c.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libsimba-e8b9d3468d293af4.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librayon-7fcad99e21f71930.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librayon_core-313b64b15ac6742a.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_cpus-f044660a22622b0c.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcrossbeam_deque-9992b322ebb97daa.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcrossbeam_epoch-7a69280a12b92961.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libmemoffset-5870f7cb298cc7d8.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libscopeguard-e96c7d1ad7d765e2.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcrossbeam_channel-d6c38093029a4ac2.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcrossbeam_utils-ae1ab8c2a29293ff.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnalgebra-3ea3d6200f810799.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libmatrixmultiply-dcbac98486c0ac58.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librawpointer-0d704228613f63f5.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libtypenum-5a4585003d73c1d9.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libsimba-f0f1d114565d5adb.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libwide-4ca35cf5beac977e.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libsafe_arch-c6c4eaf396032674.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_complex-bfa816a41aca87f8.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libapprox-aa5801ecf7ffdfc3.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libserde-c58491012c4d9679.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/liboptimize-6b3917520ffc5db0.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfloat_cmp-708e13e653789e34.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libndarray-2f97b0b785768e8e.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_complex-16f32442534e5afd.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_traits-00dd57f0f17bf7c1.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libitertools-0d1db29cf0c9ba5d.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libeither-2fb8d6ec3d6d82ba.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libmatrixmultiply-c8e8c5ff145aa12a.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librawpointer-b8ab13c3016b99f8.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libdbscan-6146e0197c30bb28.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libplotters-f2b0bd4237af07e2.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libplotters_svg-9f8790f1248aafc9.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libttf_parser-b176d3cc1483cc1a.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfont_kit-3857d23e921be905.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfloat_ord-e2f9d7583f82d046.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libdirs_next-b01f3a413b0d9332.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libdirs_sys_next-ff21c621443f9615.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libwalkdir-98dd0553ed89856d.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libsame_file-71da28543f8b802f.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfontconfig-b1535259deff732f.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfontconfig_sys-441bb1e9dd6185a1.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libexpat_sys-2871ff498966f08a.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfreetype-f74f7fa9afec8f64.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfreetype_sys-a51808c8a60eeb18.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/liblog-70578c52ab78cff0.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libpathfinder_geometry-ee78c49167815b94.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libpathfinder_simd-809d95cae8b2f698.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/liblazy_static-aef73a8347dc17b1.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libplotters_bitmap-672d8cf0c71a10e5.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libimage-d3c506a97fd6dc97.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libpng-e77f2c0392222a1f.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libminiz_oxide-94ec869d2c9a62ee.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libflate2-019d3d24c586f4a9.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libminiz_oxide-8320bab8e780c85d.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libadler-f61d448b4a26bb16.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libfdeflate-7a55484a4b843ea5.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libsimd_adler32-01b75b237d232188.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_rational-b8c10007bc4efd46.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libjpeg_decoder-d83692dee4f60cff.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libgif-dddeda6ff94dc4d3.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libweezl-e52ffca756b42def.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libimage-a64e909810acd17d.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcolor_quant-ed6bfa96b6e47850.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libbytemuck-3c660cf80c03ac30.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libpng-909c124a07e8ba03.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libminiz_oxide-f79be75b0d6d552a.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcrc32fast-686cbae6597cebc2.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libdeflate-8fd18d2dfbf0a14a.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libadler32-f922cb05128e56f2.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libbitflags-afee0ddf2d06e634.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_rational-21b4bcf3585c7b87.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_iter-7035d3fe5831ad34.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libjpeg_decoder-ba8566bbdc934137.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libbyteorder-bc8a0c6514cac625.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libchrono-ae0e28dcd2dd82f8.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libiana_time_zone-7a6ad57e4d2170d6.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_integer-ae63f57421de3ddd.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libtime-ee0c02cb56f0a8de.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libplotters_backend-13622fc444baf1e6.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librand_distr-99a93aabf58fdc9e.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libnum_traits-870de302a7fefc70.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librand-a57d7ebd4a2e84e4.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librand_chacha-430ec2a8fb57f23b.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libppv_lite86-f083758397258f39.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/librand_core-b7c50a8ec34226f0.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libgetrandom-2f910d3447dc0cea.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/liblibc-abc1fbe9a56a9a17.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libcfg_if-1cc625933ee68d00.rlib" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/libglam-056290027adcde17.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd-89bc084783fdc439.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libpanic_unwind-8bee4b287d4367c1.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libobject-d61707aed80694c0.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libmemchr-d85366256f22345b.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libaddr2line-96069b86b8a8cae9.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libgimli-d19d53abf68dfa6c.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_demangle-787cbccd19d64ac6.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libstd_detect-b3837a36b830e0d0.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libhashbrown-e3deb0e7e3f04966.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libminiz_oxide-dabbb79c9815def4.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libadler-305b01f34c9409f2.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-f833521df6074e73.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libunwind-9ac333113350d171.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcfg_if-1c126114322d0eee.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liblibc-bad9164fdeeecf92.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/liballoc-f9374b1e480fa681.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/librustc_std_workspace_core-207f06e41d9603af.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-7e2768e66e984e85.rlib" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcompiler_builtins-957b4aff41f8cd46.rlib" "-Wl,-Bdynamic" "-lfontconfig" "-lfreetype" "-lexpat" "-lfreetype" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "/gpfs/home/rawsys/matsnn/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-o" "/gpfs/home/rawsys/matsnn/Collective_Motion_Rust/target/release/deps/boids-891b9364d7cd76d8" "-Wl,--gc-sections" "-pie" "-Wl,-z,relro,-z,now" "-Wl,-O1" "-nodefaultlibs"
+  = note: /usr/bin/ld: cannot find -lfontconfig
+          /usr/bin/ld: cannot find -lfreetype
+          /usr/bin/ld: cannot find -lexpat
+          /usr/bin/ld: cannot find -lfreetype
+          collect2: error: ld returned 1 exit status
+          
+
+warning: `boids` (bin "boids") generated 19 warnings
+error: could not compile `boids` due to previous error; 19 warnings emitted
