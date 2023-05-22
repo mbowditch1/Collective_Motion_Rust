@@ -8,7 +8,7 @@ use crate::parameter_search;
 
 // function to import JSONs
 pub fn import_result(name: &str) -> parameter_search::Result {
-    let filename: String = format!("jsons/results_{}.json", name);
+    let filename: String = format!("json/results_{}.json", name);
     let output_string: String = std::fs::read_to_string(filename).unwrap();
     let mut output_json: parameter_search::Result = serde_json::from_str(&output_string).unwrap();
     output_json

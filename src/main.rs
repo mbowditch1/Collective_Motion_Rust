@@ -17,7 +17,7 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    test_model_from_json();
+    // view_model_from_json(test_params_from_json("110",vec![4,3]));
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
@@ -26,15 +26,39 @@ fn main() {
     // test_death_positions();
     // optimise_regime();
     // let results = testing::import_result("330");
+    {
+        let params = test_params_from_json("210", vec![4,3]);
+        test_death_positions(&params, "_balling");
+    }
+    {
+        let params = test_params_from_json("110", vec![4,3]);
+        test_death_positions(&params, "_sweeping");
+    }
+    {
+        let params = test_params_from_json("130", vec![1,0]);
+        test_death_positions(&params, "_initial");
+    }
 }
 
-fn test_model_from_json() {
-    let index = vec![4,4];
-    let result = testing::import_result("210");
-    let params = testing::build_params(&result, vec![2.0,1.0], vec![10.0,3.0],index);
-    let mut model = Model::from(&params);
-    model.run();
+fn view_model_from_json(params: Parameters) {
     graphics::start_game_from_parameters(&params);
+}
+
+fn test_params_from_json(sim: &str, index: Vec<usize>) -> Parameters {
+    let result = testing::import_result(sim);
+    let x = match &sim[0..1] {
+        "1" => vec![1.0,0.75],
+        "2" => vec![2.0,1.0],
+        "3" => vec![3.0,1.25],
+        _ => vec![0.0,0.0]
+    };
+    let y = match &sim[1..2] {
+        "1" => vec![10.0,3.0],
+        "2" => vec![20.0,12.0],
+        "3" => vec![30.0,27.0],
+        _ => vec![0.0,0.0]
+    };
+    testing::build_params(&result, x, y, index)
 }
 
 fn test_model() {
@@ -209,54 +233,19 @@ fn test_prey_alive() {
     plot_prey_alive(&model);
 }
 
-fn test_death_positions() {
-    let prey_params = PreyParams {
-        vision_radius: 1.0,
-        current_direction: 0.0, // not in use
-        prey_alignment: 11.663819253664858,
-        prey_attraction: -2.598339198694632,
-        prey_repulsion: 8.98344680799392,
-        predator_alignment: 1.6121609117313664,
-        predator_centering: 0.0,
-        predator_repulsion: 8.438545382876004,
-        max_acceleration: 1.0,
-        max_vel: 1.0,
-        boundary: 20.0, // not in use
-    };
-    let pred_params = PredParams {
-        vision_radius: 2.0,
-        current_direction: 0.0, // not in use
-        prey_alignment: 0.0,
-        prey_attraction: 4.1190977653920715,
-        nearest_prey: 0.0, // not in use
-        predator_alignment: 12.80190134440911,
-        predator_attraction: 4.30243976751066,
-        predator_repulsion: 1.7507335570055953,
-        max_acceleration: 1.0,
-        max_vel: 1.0,
-        boundary: 20.0, //not in use
-        cooldown: 0.0,
-    };
-    let params = Parameters {
-        // Model
-        num_prey: 400,
-        num_pred: 5,
-        bound_length: 10.0,
-        boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 60.0, 150.0),
-        prey_params,
-        pred_params,
-    };
+fn test_death_positions(params: &Parameters, sim: &str) {
+
     let mut values = Vec::new();
-    for i in 0..1000 {
+    for i in 0..5000 {
         println!("{}",i);
-        let mut model = Model::from(&params);
-        let mut times = Time::new(1.0 / 60.0, 300.0);
+        let mut model = Model::from(params);
+        let mut times = Time::new(1.0 / 20.0, 300.0);
         model.times = times;
         model.run();
         values.append(&mut death_positions(&model));
     }
-    if let Err(e) = write_to_file(String::from("./csv/death_positions.csv"),values){
+    if let Err(e) = write_to_file(String::from("./csv/death_positions") +
+        sim + ".csv", values){
         eprintln!("{}", e);
     }
 }
