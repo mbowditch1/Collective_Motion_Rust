@@ -3,7 +3,7 @@ use boids::graphics;
 use boids::model::{Model, Parameters, Time, BC};
 use boids::plot::*;
 use boids::parameter_search::*;
-use boids::testing::*;
+use boids::testing;
 use ggez::glam::Vec2;
 use std::time::Instant;
 use cmaes::DVector;
@@ -17,41 +17,61 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    // test_model();
+    test_model_from_json();
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
     // test_num_groups();
     // test_prey_alive();
     // test_death_positions();
-    optimise_regime();
+    // optimise_regime();
+    // let results = testing::import_result("330");
+}
+
+fn test_model_from_json() {
+    let index = vec![4,4];
+    let result = testing::import_result("210");
+    let params = testing::build_params(&result, vec![2.0,1.0], vec![10.0,3.0],index);
+    let mut model = Model::from(&params);
+    model.run();
+    graphics::start_game_from_parameters(&params);
 }
 
 fn test_model() {
+    // 0.5942835072783885,
+    //         0.4764408963394583,
+    //         -0.014779979372132102,
+    //         0.8065690017890519,
+    //         0.856870731005716
+
     let prey_params = PreyParams {
         vision_radius: 1.0,
         current_direction: 0.0, // not in use
-        prey_alignment: 0.9582261937705074, //11.663819253664858,
-        prey_attraction: -0.0711222698745498, //-2.598339198694632,
-        prey_repulsion: 0.9824784427027915, //8.98344680799392,
-        predator_alignment: 0.6863455709757276, //1.6121609117313664,
+        prey_alignment: 0.5942835072783885, //11.663819253664858,
+        prey_attraction:  0.4764408963394583, //-2.598339198694632,
+        prey_repulsion: -0.014779979372132102, //8.98344680799392,
+        predator_alignment: 0.8065690017890519, //1.6121609117313664,
         predator_centering: 0.0,
-        predator_repulsion: 0.7396519317096918, //8.438545382876004,
+        predator_repulsion: 0.856870731005716, //8.438545382876004,
         max_acceleration: 2.0,
         max_vel: 1.0,
         boundary: 20.0, // not in use
     };
+    // 0.4597890259042512,
+    //         0.8898593906962953,
+    //         0.05806220760232625,
+    //         0.02606796932150995
     let pred_params = PredParams {
         vision_radius: 2.0,
         current_direction: 0.0, // not in use
         prey_alignment: 0.0,
-        prey_attraction: 1.1813,
+        prey_attraction: 0.4597890259042512, //0.9743652540276795,
         nearest_prey: 0.0, // not in use
-        predator_alignment: 0.5662,
-        predator_attraction: 0.1217,
-        predator_repulsion: 0.0315,
-        max_acceleration: 2.0,
-        max_vel: 1.2,
+        predator_alignment: 0.8898593906962953, //-0.20327822862488437,
+        predator_attraction: 0.05806220760232625, //-0.22612876961363704,
+        predator_repulsion: 0.02606796932150995, //-0.4092613999611435,
+        max_acceleration: 1.0,
+        max_vel: 0.75,
         boundary: 20.0, //not in use
         cooldown: 0.5,
     };
@@ -61,7 +81,7 @@ fn test_model() {
         num_pred: 3,
         bound_length: 10.0,
         boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 20.0, 200.0),
+        times: Time::new(1.0 / 60.0, 200.0),
         prey_params,
         pred_params,
     };

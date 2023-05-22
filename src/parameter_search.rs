@@ -4,7 +4,7 @@ use crate::model::{Model, Parameters, Time, BC};
 use crate::plot::*;
 use ndarray::prelude::*;
 use std::time::Duration;
-use serde::{Serialize};
+use serde::{Serialize,Deserialize};
 use std::fs::File;
 use std::io::Write;
 
@@ -290,11 +290,12 @@ pub fn optimise_regime() {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Result {
-    prey_behaviour_params: Vec<Vec<f64>>,
-    pred_behaviour_params: Vec<Vec<f64>>,
-    final_predation: Vec<f64>,
+    pub prey_behaviour_params: Vec<Vec<f64>>,
+    pub pred_behaviour_params: Vec<Vec<f64>>,
+    pub final_predation: Vec<f64>,
 }
 
 impl Result {
