@@ -16,28 +16,12 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    //optimise_deaths_pred();
-    view_model_from_json(test_params_from_json("310",vec![3,2]));
+    // view_model_from_json(test_params_from_json("310",vec![3,3]));
     // test_plots();
-    // graphics::start_game();
-    // test_avg_vel();
-    // test_num_groups();
-    // test_prey_alive();
-    // test_death_positions();
     // optimise_regime();
-    // let results = testing::import_result("330");
-    // {
-    //     let params = test_params_from_json("210", vec![4,3]);
-    //     test_death_positions(&params, "_balling");
-    // }
-    // {
-    //     let params = test_params_from_json("110", vec![4,3]);
-    //     test_death_positions(&params, "_sweeping");
-    // }
-    // {
     //     let params = test_params_from_json("130", vec![1,0]);
     //     test_death_positions(&params, "_initial");
-    // }
+    groups_from_optimisations("110",100);
 }
 
 fn view_model_from_json(params: Parameters) {
@@ -59,6 +43,37 @@ fn test_params_from_json(sim: &str, index: Vec<usize>) -> Parameters {
         _ => vec![0.0,0.0]
     };
     testing::build_params(&result, x, y, index)
+}
+
+fn groups_from_optimisations(scenario: &str, iters: usize) {
+    let mut group_num: Vec<f32> = Vec::new();
+    // for each epoch
+    for i in 0..4 {
+        // import parameter set
+        let params = test_params_from_json(scenario ,vec![i+1,i]);
+        let mut tmp: f32 = 0.0;
+        // average simulations
+        for j in 0..iters {
+            // create model
+            let mut model = Model::from(&params);
+            model.run();
+            // add all group numbers
+            tmp += avg_number_groups(&model);
+        }
+        group_num.push(tmp/(iters as f32)); // result
+        // println!("{}", group_num[2*i]);
+        // repeat for prey opt
+        let params = test_params_from_json(scenario ,vec![i+1,i]);
+        let mut tmp: f32 = 0.0;
+        for j in 0..iters {
+            let mut model = Model::from(&params);
+            model.run();
+            tmp += avg_number_groups(&model);
+        }
+        group_num.push(tmp/(iters as f32));
+        // println!("{}", group_num[2*i + 1]);
+    }
+    write_to_file(String::from("csv/group_num_opt") + scenario + ".csv", vec![group_num]);
 }
 
 fn test_model() {

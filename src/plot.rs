@@ -76,7 +76,12 @@ pub fn number_groups(agents: &Vec<Agent>, time_step: usize) -> f32 {
     let model = dbscan::Model::new(0.5,5);
     let mut inputs: Vec<Vec<f32>> = Vec::new();
     for a in agents.iter() {
-        inputs.push(a.positions[time_step].to_array().to_vec());
+        match a.dead {
+            State::Alive => {
+                inputs.push(a.positions[time_step].to_array().to_vec());
+            },
+            _ => (),
+        }
     }
     model.run(&inputs);
     let clusters = dbscan::cluster(1.0, 5, &inputs);
@@ -90,6 +95,19 @@ pub fn number_groups(agents: &Vec<Agent>, time_step: usize) -> f32 {
         }
     }
     count as f32
+}
+
+pub fn avg_number_groups(model: &Model) -> f32 {
+    let burn_in: usize = 20*60;
+    let num_steps = model.times.times.len() - burn_in;
+    let mut num_groups: f32 = 0.0;
+    // burn in 20 seconds
+    for i in 0..num_steps {
+        // add group number for all steps
+        num_groups += number_groups(&model.agents, i);
+    }
+    // divide group number by the number of steps to get mean
+    (num_groups as f32)/(num_steps as f32)
 }
 
 pub fn plot_number_groups(model: &Model) {
