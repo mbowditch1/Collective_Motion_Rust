@@ -17,7 +17,7 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 
 fn main() {
     //optimise_deaths_pred();
-    // view_model_from_json(test_params_from_json("110",vec![4,3]));
+    view_model_from_json(test_params_from_json("310",vec![3,2]));
     // test_plots();
     // graphics::start_game();
     // test_avg_vel();
@@ -26,18 +26,18 @@ fn main() {
     // test_death_positions();
     // optimise_regime();
     // let results = testing::import_result("330");
-    {
-        let params = test_params_from_json("210", vec![4,3]);
-        test_death_positions(&params, "_balling");
-    }
-    {
-        let params = test_params_from_json("110", vec![4,3]);
-        test_death_positions(&params, "_sweeping");
-    }
-    {
-        let params = test_params_from_json("130", vec![1,0]);
-        test_death_positions(&params, "_initial");
-    }
+    // {
+    //     let params = test_params_from_json("210", vec![4,3]);
+    //     test_death_positions(&params, "_balling");
+    // }
+    // {
+    //     let params = test_params_from_json("110", vec![4,3]);
+    //     test_death_positions(&params, "_sweeping");
+    // }
+    // {
+    //     let params = test_params_from_json("130", vec![1,0]);
+    //     test_death_positions(&params, "_initial");
+    // }
 }
 
 fn view_model_from_json(params: Parameters) {
