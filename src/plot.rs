@@ -98,7 +98,7 @@ pub fn number_groups(agents: &Vec<Agent>, time_step: usize) -> f32 {
 }
 
 pub fn avg_number_groups(model: &Model) -> f32 {
-    let burn_in: usize = 20*60;
+    let burn_in: usize = 20*20;
     let num_steps = model.times.times.len() - burn_in;
     let mut num_groups: f32 = 0.0;
     // burn in 20 seconds

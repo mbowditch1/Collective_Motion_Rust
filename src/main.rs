@@ -3,6 +3,7 @@ use boids::graphics;
 use boids::model::{Model, Parameters, Time, BC};
 use boids::plot::*;
 use boids::parameter_search::*;
+use boids::parameter_search;
 use boids::testing;
 use ggez::glam::Vec2;
 use std::time::Instant;
@@ -16,12 +17,54 @@ fn estimated_running_time(dt: f32, endtime: f32, num_iterations: f32) -> f32 {
 }
 
 fn main() {
-    // view_model_from_json(test_params_from_json("310",vec![3,3]));
+    // view_model_from_json(test_params_from_json("110",vec![4,3]));
     // test_plots();
     // optimise_regime();
     //     let params = test_params_from_json("130", vec![1,0]);
     //     test_death_positions(&params, "_initial");
-    groups_from_optimisations(30);
+    // groups_from_optimisations(30);
+    let iters: usize = 100;
+
+    for cr in vec![vec![0.5,0.05], vec![-0.5,-0.05], vec![0.5,-0.05], vec![-0.5,0.05]].iter() {
+        let mut group_num: Vec<f32> = Vec::new();
+        let mut avg_vel: Vec<f32> = Vec::new();
+        let mut polar: Vec<f32> = Vec::new();
+        let result = parameter_search::Result{
+            prey_behaviour_params: vec![vec![1.0,cr[0],cr[1],0.0,0.0]],
+            pred_behaviour_params: vec![vec![0.0;4]],
+            final_predation: Vec::new(),
+        };
+        let params: Parameters = testing::build_params(&result, vec![2.0,1.0], vec![10.0,0.0], vec![0,0]);
+        let mut model = Model::from(&params);
+        model.run();
+        let num_steps = model.times.times.len();
+
+        group_num.append(&mut vec![0.0;num_steps]);
+        avg_vel.append(&mut vec![0.0;num_steps]);
+        polar.append(&mut vec![0.0;num_steps]);
+
+        for i in 0..iters {
+            let mut model = Model::from(&params);
+            model.run();
+
+            // calculate metrics
+            for i in 0..num_steps {
+                // group number
+                group_num[i] += number_groups(&model.agents, i);
+                // average velocity
+                avg_vel[i] += avg_velocity(&model.agents, i);
+                // order
+                polar[i] += order(&model.agents, i);
+            }
+        }
+        for i in 0..group_num.len() {
+            group_num[i] /= (iters as f32);
+            avg_vel[i] /= (iters as f32);
+            polar[i] /= (iters as f32);
+        }
+        let values: Vec<Vec<f32>> = vec![group_num,avg_vel,polar];
+        write_to_file(String::from("csv/lots_of_results_") + &cr[0].to_string() + &cr[1].to_string() + ".csv", values);
+    }
 }
 
 fn view_model_from_json(params: Parameters) {
@@ -65,7 +108,7 @@ fn groups_from_optimisations(iters: usize) {
             group_num.push(tmp/(iters as f32)); // result
             // println!("{}", group_num[2*i]);
             // repeat for prey opt
-            let params = test_params_from_json(scenario ,vec![i+1,i]);
+            let params = test_params_from_json(scenario ,vec![i+1,i+1]);
             let mut tmp: f32 = 0.0;
             for j in 0..iters {
                 let mut model = Model::from(&params);

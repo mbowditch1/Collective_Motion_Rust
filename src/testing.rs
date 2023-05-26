@@ -46,11 +46,11 @@ pub fn build_params(result: &parameter_search::Result, physical_params: Vec<f32>
     };
     Parameters {
         // Model
-        num_prey: 400,
+        num_prey: 100,
         num_pred: space_params[1] as usize,
         bound_length: space_params[0],
-        boundary_condition: BC::Soft(2.0), // only current BCmain
-        times: Time::new(1.0 / 60.0, 300.0),
+        boundary_condition: BC::Periodic, // only current BCmain
+        times: Time::new(1.0 / 20.0, 300.0),
         prey_params,
         pred_params,
     }
