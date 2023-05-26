@@ -52,12 +52,12 @@ pub fn order_plot(path: String, model: &Model) {
 }
 
 pub fn avg_velocity(agents: &Vec<Agent>, time_step: usize) -> f32 {
-    let mut avg_vel = Vec2::ZERO;
+    let mut avg_vel: f32 = 0.0;
     for a in agents.iter() {
         avg_vel += a.velocities[time_step].length();
     }
-    let N = agents.len() as f32;
-    (avg_vel.length()) / N
+    let n = agents.len() as f32;
+    avg_vel / n
 }
 
 pub fn plot_avg_velocity(model: &Model) {

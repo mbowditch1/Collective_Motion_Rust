@@ -23,48 +23,7 @@ fn main() {
     //     let params = test_params_from_json("130", vec![1,0]);
     //     test_death_positions(&params, "_initial");
     // groups_from_optimisations(30);
-    let iters: usize = 100;
-
-    for cr in vec![vec![0.5,0.05], vec![-0.5,-0.05], vec![0.5,-0.05], vec![-0.5,0.05]].iter() {
-        let mut group_num: Vec<f32> = Vec::new();
-        let mut avg_vel: Vec<f32> = Vec::new();
-        let mut polar: Vec<f32> = Vec::new();
-        let result = parameter_search::Result{
-            prey_behaviour_params: vec![vec![1.0,cr[0],cr[1],0.0,0.0]],
-            pred_behaviour_params: vec![vec![0.0;4]],
-            final_predation: Vec::new(),
-        };
-        let params: Parameters = testing::build_params(&result, vec![2.0,1.0], vec![10.0,0.0], vec![0,0]);
-        let mut model = Model::from(&params);
-        model.run();
-        let num_steps = model.times.times.len();
-
-        group_num.append(&mut vec![0.0;num_steps]);
-        avg_vel.append(&mut vec![0.0;num_steps]);
-        polar.append(&mut vec![0.0;num_steps]);
-
-        for i in 0..iters {
-            let mut model = Model::from(&params);
-            model.run();
-
-            // calculate metrics
-            for i in 0..num_steps {
-                // group number
-                group_num[i] += number_groups(&model.agents, i);
-                // average velocity
-                avg_vel[i] += avg_velocity(&model.agents, i);
-                // order
-                polar[i] += order(&model.agents, i);
-            }
-        }
-        for i in 0..group_num.len() {
-            group_num[i] /= (iters as f32);
-            avg_vel[i] /= (iters as f32);
-            polar[i] /= (iters as f32);
-        }
-        let values: Vec<Vec<f32>> = vec![group_num,avg_vel,polar];
-        write_to_file(String::from("csv/lots_of_results_") + &cr[0].to_string() + &cr[1].to_string() + ".csv", values);
-    }
+    
 }
 
 fn view_model_from_json(params: Parameters) {
